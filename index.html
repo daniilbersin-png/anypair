@@ -9,7 +9,6 @@
 <meta property="og:description" content="Create and trade asset-inspired tokens on BNB Chain. Bonding curves, on-chain references and PancakeSwap graduation.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://anypair.vercel.app/">
-<link rel="stylesheet" href="app.css">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
@@ -135,6 +134,8 @@
     .cmd .line .dim{display:none}
   }
 </style>
+<link rel="stylesheet" href="app.css">
+<link rel="stylesheet" href="catalog.css">
 </head>
 <body>
 <div id="boot"><div class="big">ANYTHING&nbsp;TERMINAL</div><div class="sm" id="bootmsg">CONNECTING TO BNB CHAIN…</div></div>
@@ -250,7 +251,6 @@
 <dialog id="about-dialog"><div class="mh">ABOUT ANYTHING <button id="about-close" aria-label="Close about">[X]</button></div><div class="mb"><h1>Launch a market around your idea.</h1><p>Anything is a BNB Chain launchpad for asset-inspired tokens. Create a token around a commodity, collectible, game item or meme, trade on its bonding curve, and graduate to PancakeSwap.</p><h2>References, with context</h2><p>Choose from stocks, crypto, commodity futures, published food surveys, game items, collectibles and unusual ideas. External prices include their source and date; some references have no verified quote. On-chain feeds may be manually maintained and stale. References do not back tokens, set their trading price or provide redemption rights.</p><h2>From curve to PancakeSwap</h2><p id="about-config">Loading current launchpad settings…</p><p>LP tokens go to the creator at graduation. They are not locked: the creator can withdraw liquidity. The launchpad owner can change curve settings and fees. The contracts are not audited.</p><h2>Find a token</h2><p>Use its contract address. A token created here is not automatically listed on GMGN. Terminal visibility depends on the service’s supported markets and indexing.</p><div class="market-links"><a href="https://github.com/daniilbersin-png/anypair" target="_blank" rel="noopener noreferrer">SOURCE ↗</a><a href="https://bscscan.com/address/0xd860536cff34829f4d3Fdb678E81bD1C8A81785E" target="_blank" rel="noopener noreferrer">LAUNCHPAD ↗</a></div></div></dialog>
 <script src="assets/ethers.umd.min.js"></script>
 <script src="config.js"></script>
-<link rel="stylesheet" href="catalog.css">
 <script type="module" src="app.js"></script>
 </body>
 </html>
