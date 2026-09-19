@@ -1,3 +1,4 @@
+import {isHiddenToken,visibleListings} from './lib/listings.mjs';
 import {assetFromKey} from './lib/assets.mjs';
 import {parseAmount} from './lib/market.mjs';
 import {REWARD_ABI,TOKEN_ABI,PAIR_ABI,fundingInput,emitted,couponEquivalent,verifyRewards,rewardGasLimit} from './lib/rewards.mjs';
@@ -32,7 +33,7 @@ export function initRewards(ctx){
   $('#rw-close').disabled=acting;
   $('#rw-connect').hidden=connected;$('#rw-creator').hidden=!ready||!connected||data.creator.toLowerCase()!==c.me.toLowerCase();
   for(const id of ['rw-stake','rw-unstake','rw-claim','rw-fund','rw-refund','rw-max-deposit','rw-max-withdraw'])$('#'+id).disabled=locked||!ready||!connected;
-  if(ready){$('#rw-stake').disabled||=!data.active;$('#rw-max-deposit').disabled||=!data.active;$('#rw-unstake').disabled||=data.staked===0n;$('#rw-claim').disabled||=data.earned===0n;$('#rw-refund').disabled||=data.active||data.refundable===0n;$('#rw-days').disabled=locked||data.active;}
+  if(ready){const archived=isHiddenToken(data.token);$('#rw-stake').disabled||=!data.active||archived;$('#rw-max-deposit').disabled||=!data.active||archived;$('#rw-fund').disabled||=archived;$('#rw-unstake').disabled||=data.staked===0n;$('#rw-claim').disabled||=data.earned===0n;$('#rw-refund').disabled||=data.active||data.refundable===0n;$('#rw-days').disabled=locked||data.active||archived;}
  }
  async function contract(){
   const {rpc,C}=ctx.get();if(!rpc)throw Error('Connecting to BNB Chain. Try again shortly.');
@@ -41,10 +42,10 @@ export function initRewards(ctx){
   if(!artifact){const r=await fetch('/assets/rewards-artifact.json');if(!r.ok)throw Error('Contract artifact unavailable.');artifact=await r.json();}
   vault=await verifyRewards(E,rpc,C,artifact);verified=C.REWARDS;return vault;
  }
- function options(){
-  const {secs,selected}=ctx.get(),select=$('#rw-token');const previous=token||selected||'';
+ function options(explicitAddress=false){
+  const {secs,selected}=ctx.get(),select=$('#rw-token');const candidate=token||selected||'',previous=isHiddenToken(candidate)&&!explicitAddress?'':candidate;
   select.replaceChildren(new Option('Select a token',''));
-  for(const s of secs)select.add(new Option(s.sym+' · '+s.name+' · '+s.token.slice(0,6)+'…'+s.token.slice(-4),s.token));
+  for(const s of visibleListings(secs))select.add(new Option(s.sym+' · '+s.name+' · '+s.token.slice(0,6)+'…'+s.token.slice(-4),s.token));
   if(previous&&!Array.from(select.options).some(o=>o.value.toLowerCase()===previous.toLowerCase()))select.add(new Option(previous,previous));
   select.value=Array.from(select.options).find(o=>o.value.toLowerCase()===previous.toLowerCase())?.value||'';token=select.value;
  }
@@ -84,7 +85,7 @@ export function initRewards(ctx){
    if(pair.token.toLowerCase()!==chosen.toLowerCase())throw Error('This token was not created on this launchpad.');
    const active=BigInt(block.timestamp)<pool.finish,additional=pool.totalStaked===0n?emitted(pool,block.timestamp)-pool.epochReleased:0n;
    data={token:chosen,owner:c.me,creator:pair.creator,pool,name,symbol,asset:assetFromKey(pair.assetKey),staked,earned,balance,usdtBalance,active,refundable:pool.idle+additional-pool.refunded,now:block.timestamp,readAt:Date.now(),block:block.number};
-   render();if(message)notify(c.pendingHash?'A transaction is pending. Use the terminal Refresh button to check confirmation.':'Rewards come only from the creator’s deposited USDT.');
+   render();if(message)notify(isHiddenToken(chosen)?'This token is hidden from listings. Existing withdrawals, claims and eligible refunds remain accessible by contract address. New deposits and funding are disabled.':c.pendingHash?'A transaction is pending. Use the terminal Refresh button to check confirmation.':'Rewards come only from the creator’s deposited USDT.');
   }catch(e){vault=null;verified='';notify(ctx.errorText(e)+' Displayed balances are unavailable; transactions are disabled.');}
   finally{loading=false;controls();}
  }
@@ -99,6 +100,7 @@ export function initRewards(ctx){
   const c=ctx.get(),d=data;if(acting||loading||c.busy||c.pendingHash||!vault||!d)return;if(!c.me){ctx.openWallet();return;}
   let amount,duration;
   try{
+   if(isHiddenToken(d.token)&&['stake','fund'].includes(kind))throw Error('This token is hidden. Only withdrawals, claims and eligible refunds remain available.');
    if(d.owner!==c.me||Date.now()-d.readAt>90000)throw Error('Balance snapshot changed or expired. Refresh before continuing.');
    if(kind==='stake'||kind==='withdraw')amount=parseAmount($('#rw-'+(kind==='stake'?'deposit':'withdraw')).value);
    if(kind==='fund'){const input=fundingInput($('#rw-budget').value,$('#rw-days').value);amount=input.budget;duration=input.duration;}
@@ -121,7 +123,7 @@ export function initRewards(ctx){
  const intentKey=(c,t)=>'anything:reward-intent:'+c.C.CHAIN_ID+':'+c.me.toLowerCase()+':'+t.toLowerCase();
  async function open(address,intent){if(ctx.get().busy)return;token=address||ctx.get().selected||token;options();dialog.showModal();await refresh();const c=ctx.get();let saved=intent;try{saved||=JSON.parse(localStorage.getItem(intentKey(c,token))||'null')}catch{}if(saved){$('#rw-budget').value=saved.amount;$('#rw-days').value=String(saved.days);notify('Token created. Complete the USDT funding to start rewards.');}}
  $('#rw-close').onclick=()=>dialog.close();dialog.addEventListener('cancel',e=>{if(acting)e.preventDefault();});
- $('#rw-token').onchange=()=>{token=$('#rw-token').value;refresh();};$('#rw-load').onclick=()=>{if(!E.isAddress($('#rw-address').value.trim()))return notify('Enter a valid BNB token contract address.');token=E.getAddress($('#rw-address').value.trim());options();refresh();};
+ $('#rw-token').onchange=()=>{token=$('#rw-token').value;refresh();};$('#rw-load').onclick=()=>{if(!E.isAddress($('#rw-address').value.trim()))return notify('Enter a valid BNB token contract address.');token=E.getAddress($('#rw-address').value.trim());options(true);refresh();};
  $('#rw-connect').onclick=ctx.openWallet;$('#rw-refresh').onclick=()=>refresh();
  $('#rw-max-deposit').onclick=()=>{$('#rw-deposit').value=fmt(data.balance);};$('#rw-max-withdraw').onclick=()=>{$('#rw-withdraw').value=fmt(data.staked);};
  for(const [id,kind] of [['rw-stake','stake'],['rw-unstake','withdraw'],['rw-claim','claim'],['rw-fund','fund'],['rw-refund','refund']])$('#'+id).onclick=()=>action(kind);
