@@ -11,7 +11,7 @@ export function initRewards(ctx){
  const dialog=document.createElement('dialog');dialog.id='rewards-dialog';
  dialog.innerHTML=`<div class="mh">REWARDS <button id="rw-close" aria-label="Close rewards">[X]</button></div><div class="mb rewards-body">
  <p id="rw-environment" class="rw-notice" hidden>LOCAL TEST NETWORK · These funds have no real value.</p><div class="rw-intro"><span class="rw-kicker">HOLD AN IDEA. EARN ITS EQUIVALENT.</span><h1>Stake tokens. Collect coupons.</h1><p>Creators fund campaigns with USDT. Your share of the deposited tokens earns a share of that budget over time. Withdraw your tokens whenever you want.</p></div>
- <div id="rw-activation" class="rw-notice" hidden>Rewards are awaiting one-time contract activation on BNB Chain. No rewards are accruing yet. <a href="rewards-setup.html">Project setup ↗</a></div>
+ <div id="rw-activation" class="rw-notice" hidden>Rewards are awaiting one-time contract activation on BNB Chain. No rewards are accruing yet. <a href="flap-setup.html">Project setup ↗</a></div>
  <label for="rw-token">TOKEN · LATEST LAUNCHES</label><select id="rw-token"><option value="">Select a token</option></select>
  <details><summary>Find a token by contract address</summary><div class="rw-row"><input id="rw-address" aria-label="Token contract address" placeholder="0x…"><button id="rw-load">Load</button></div></details>
  <div id="rw-contract" class="note"></div><p id="rw-state" role="status" aria-live="polite">Choose a token to see its campaign.</p>
@@ -29,31 +29,31 @@ export function initRewards(ctx){
  document.body.append(dialog);
  const notify=message=>{$('#rw-state').textContent=message;};
  function controls(){
-  const c=ctx.get(),locked=acting||c.busy||!!c.pendingHash||loading,ready=!!data&&!!vault,connected=!!c.me;
+  const c=ctx.get(token),locked=acting||c.busy||!!c.pendingHash||loading,ready=!!data&&!!vault,connected=!!c.me;
   for(const el of dialog.querySelectorAll('input,select,button'))el.disabled=locked;
   $('#rw-close').disabled=acting;
   $('#rw-connect').hidden=connected;$('#rw-creator').hidden=!ready||!connected||data.creator.toLowerCase()!==c.me.toLowerCase();
   for(const id of ['rw-stake','rw-unstake','rw-claim','rw-fund','rw-refund','rw-max-deposit','rw-max-withdraw'])$('#'+id).disabled=locked||!ready||!connected;
   if(ready){const archived=isHiddenToken(data.token);$('#rw-stake').disabled||=!data.active||archived;$('#rw-max-deposit').disabled||=!data.active||archived;$('#rw-fund').disabled||=archived;$('#rw-unstake').disabled||=data.staked===0n;$('#rw-claim').disabled||=data.earned===0n;$('#rw-refund').disabled||=data.active||data.refundable===0n;$('#rw-days').disabled=locked||data.active||archived;}
  }
- async function contract(){
-  const {rpc,C}=ctx.get();if(!rpc)throw Error('Connecting to BNB Chain. Try again shortly.');
+ async function contract(target=token){
+  const {rpc,C}=ctx.get(target);if(!rpc)throw Error('Connecting to BNB Chain. Try again shortly.');
   if(!C.REWARDS){vault=null;return null;}
   if(verified===C.REWARDS&&vault)return vault;
   if(!artifact){const r=await fetch('/assets/rewards-artifact.json');if(!r.ok)throw Error('Contract artifact unavailable.');artifact=await r.json();}
   vault=await verifyRewards(E,rpc,C,artifact);verified=C.REWARDS;return vault;
  }
  function options(explicitAddress=false){
-  const {secs,selected}=ctx.get(),select=$('#rw-token');const candidate=token||selected||'',previous=isHiddenToken(candidate)&&!explicitAddress?'':candidate;
+  const {secs,selected}=ctx.get(token),select=$('#rw-token');const candidate=token||selected||'',previous=isHiddenToken(candidate)&&!explicitAddress?'':candidate;
   select.replaceChildren(new Option('Select a token',''));
   for(const s of visibleListings(secs))select.add(new Option(s.sym+' · '+s.name+' · '+s.token.slice(0,6)+'…'+s.token.slice(-4),s.token));
   if(previous&&!Array.from(select.options).some(o=>o.value.toLowerCase()===previous.toLowerCase()))select.add(new Option(previous,previous));
   select.value=Array.from(select.options).find(o=>o.value.toLowerCase()===previous.toLowerCase())?.value||'';token=select.value;
  }
  async function readQuote(snapshot){
-  const c=ctx.get(),asset=snapshot.asset;let q;
+  const c=ctx.get(token),asset=snapshot.asset;let q;
   try{if(asset)q=await ctx.quote(asset);if(rateUntil<Date.now()){const r=await fetch('/api/usdt-quote',{signal:AbortSignal.timeout(9000)});rate=r.ok?await r.json():undefined;rateUntil=Date.now()+60000;}}catch{rate=undefined;}
-  if(data!==snapshot||c.me!==ctx.get().me)return;
+  if(data!==snapshot||c.me!==ctx.get(token).me)return;
   const equivalent=couponEquivalent(snapshot.earned,asset,q,rate);
   $('#rw-coupons').textContent=equivalent?'≈ '+human(equivalent.units):'Quote unavailable';
   $('#rw-product').textContent=asset?asset.name+' · '+asset.unit:'No product reference';
@@ -62,7 +62,7 @@ export function initRewards(ctx){
   if(equivalent){const a=document.createElement('a');a.href=rate.url;a.target='_blank';a.rel='noopener noreferrer';a.textContent=' USDT/USD source ↗';$('#rw-quote').append(a);}
  }
  function render(){
-  const c=ctx.get(),d=data,p=d.pool;$('#rw-content').hidden=false;$('#rw-title').textContent=d.name+' / '+d.symbol;
+  const c=ctx.get(token),d=data,p=d.pool;$('#rw-content').hidden=false;$('#rw-title').textContent=d.name+' / '+d.symbol;
   $('#rw-campaign').textContent=(d.active?'ACTIVE · ends '+englishDateTime(new Date(Number(p.finish)*1000)):p.finish?'ENDED · deposits paused':'NOT FUNDED')+' · Total deposited: '+human(p.totalStaked)+' '+d.symbol+' · Lifetime funding: '+human(p.funded)+' USDT · Scheduled remaining: '+human(p.epochBudget-emitted(p,d.now))+' USDT';
   $('#rw-staked').textContent=human(d.staked)+' '+d.symbol;$('#rw-earned').textContent=fmt(d.earned);$('#rw-wallet').textContent='Wallet: '+human(d.balance)+' '+d.symbol;
   $('#rw-fund-note').textContent='Your balance: '+human(d.usdtBalance)+' USDT. '+(d.active?'A top-up increases the remaining budget and keeps the same end date.':'Start a new funded campaign. Existing deposits and unclaimed rewards are preserved.');
@@ -73,8 +73,9 @@ export function initRewards(ctx){
  }
  async function refresh({message=true}={}){
   if(loading||acting)return;const version=++seq;loading=true;data=undefined;controls();$('#rw-content').hidden=true;
-  const c=ctx.get(),chosen=token;$('#rw-activation').hidden=!!c.C.REWARDS;$('#rw-environment').hidden=!c.LOCAL;
+  const chosen=token;
   try{
+   await ctx.resolve?.(chosen);if(version!==seq||chosen!==token)return;const c=ctx.get(chosen);$('#rw-activation').hidden=!!c.C.REWARDS;$('#rw-environment').hidden=!c.LOCAL;
    const v=await contract();$('#rw-contract').replaceChildren();
    if(!v){notify('The rewards contract is not activated. Funding and deposits are disabled.');return;}
    const a=document.createElement('a');a.href=c.C.EXPLORER+'/address/'+c.C.REWARDS;a.textContent='Verified rewards contract: '+c.C.REWARDS;a.target='_blank';a.rel='noopener noreferrer';$('#rw-contract').append(a);
@@ -82,7 +83,7 @@ export function initRewards(ctx){
    if(message)notify('Reading campaign and balances…');
    const block=await c.rpc.getBlock('latest'),at={blockTag:block.number},t=new E.Contract(chosen,TOKEN_ABI,c.rpc),pad=new E.Contract(c.C.LAUNCHPAD,PAIR_ABI,c.rpc);
    const [pair,pool,name,symbol,staked,earned,balance,usdtBalance]=await Promise.all([pad.getPair(chosen,at),v.getPool(chosen,at),t.name(at),t.symbol(at),c.me?v.staked(chosen,c.me,at):0n,c.me?v.earned(chosen,c.me,at):0n,c.me?t.balanceOf(c.me,at):0n,c.me?new E.Contract(c.C.USDT,TOKEN_ABI,c.rpc).balanceOf(c.me,at):0n]);
-   if(version!==seq||chosen!==token||c.me!==ctx.get().me)return;
+   if(version!==seq||chosen!==token||c.me!==ctx.get(token).me)return;
    if(pair.token.toLowerCase()!==chosen.toLowerCase())throw Error('This token was not created on this launchpad.');
    const active=BigInt(block.timestamp)<pool.finish,additional=pool.totalStaked===0n?emitted(pool,block.timestamp)-pool.epochReleased:0n;
    data={token:chosen,owner:c.me,creator:pair.creator,pool,name,symbol,asset:assetFromKey(pair.assetKey),staked,earned,balance,usdtBalance,active,refundable:pool.idle+additional-pool.refunded,now:block.timestamp,readAt:Date.now(),block:block.number};
@@ -96,9 +97,9 @@ export function initRewards(ctx){
   if(allowance>0n){notify('Reset the previous allowance in your wallet.');await ctx.waitMined(await t.approve(c.C.REWARDS,0),'reward-allowance-reset',token);await check(c);}
   notify('Approve exactly '+fmt(amount)+(address.toLowerCase()===c.C.USDT.toLowerCase()?' USDT':' tokens')+' for the rewards contract.');await ctx.waitMined(await t.approve(c.C.REWARDS,amount),'reward-approval',token);await check(c);
  }
- async function check(c){await ctx.verifyWallet();if(ctx.get().me!==c.me||ctx.get().C.REWARDS!==c.C.REWARDS)throw Error('Wallet or rewards configuration changed. Review again.');}
+ async function check(c){await ctx.verifyWallet();if(ctx.get(token).me!==c.me||ctx.get(token).C.REWARDS!==c.C.REWARDS)throw Error('Wallet or rewards configuration changed. Review again.');}
  async function action(kind){
-  const c=ctx.get(),d=data;if(acting||loading||c.busy||c.pendingHash||!vault||!d)return;if(!c.me){ctx.openWallet();return;}
+  const c=ctx.get(token),d=data;if(acting||loading||c.busy||c.pendingHash||!vault||!d)return;if(!c.me){ctx.openWallet();return;}
   let amount,duration;
   try{
    if(isHiddenToken(d.token)&&['stake','fund'].includes(kind))throw Error('This token is hidden. Only withdrawals, claims and eligible refunds remain available.');
@@ -118,11 +119,11 @@ export function initRewards(ctx){
    const tx=await writer[method](...args,{gasLimit});await ctx.waitMined(tx,'rewards-'+method,d.token);
    ctx.status('Rewards transaction confirmed: '+method,tx.hash);notify('Confirmed: '+method+'.');
    if(kind==='fund'){try{localStorage.removeItem(intentKey(c,d.token));}catch{}}
-  }catch(e){notify(ctx.errorText(e));ctx.status(ctx.errorText(e),ctx.get().pendingHash||undefined);}
+  }catch(e){notify(ctx.errorText(e));ctx.status(ctx.errorText(e),ctx.get(token).pendingHash||undefined);}
   finally{if(acting){acting=false;ctx.setBusy(false);await refresh({message:false});}controls();}
  }
  const intentKey=(c,t)=>'anything:reward-intent:'+c.C.CHAIN_ID+':'+c.me.toLowerCase()+':'+t.toLowerCase();
- async function open(address,intent){if(ctx.get().busy)return;token=address||ctx.get().selected||token;options();dialog.showModal();await refresh();const c=ctx.get();let saved=intent;try{saved||=JSON.parse(localStorage.getItem(intentKey(c,token))||'null')}catch{}if(saved){$('#rw-budget').value=saved.amount;$('#rw-days').value=String(saved.days);notify('Token created. Complete the USDT funding to start rewards.');}}
+ async function open(address,intent){if(ctx.get(token).busy)return;token=address||ctx.get(token).selected||token;options();dialog.showModal();await refresh();const c=ctx.get(token);let saved=intent;try{saved||=JSON.parse(localStorage.getItem(intentKey(c,token))||'null')}catch{}if(saved){$('#rw-budget').value=saved.amount;$('#rw-days').value=String(saved.days);notify('Token created. Complete the USDT funding to start rewards.');}}
  $('#rw-close').onclick=()=>dialog.close();dialog.addEventListener('cancel',e=>{if(acting)e.preventDefault();});
  $('#rw-token').onchange=()=>{token=$('#rw-token').value;refresh();};$('#rw-load').onclick=()=>{if(!E.isAddress($('#rw-address').value.trim()))return notify('Enter a valid BNB token contract address.');token=E.getAddress($('#rw-address').value.trim());options(true);refresh();};
  $('#rw-connect').onclick=ctx.openWallet;$('#rw-refresh').onclick=()=>refresh();
@@ -131,8 +132,8 @@ export function initRewards(ctx){
  $('#fk-rewards').onclick=()=>open();$('#selected-rewards').onclick=()=>open();
  const timer=setInterval(()=>{if(dialog.open)refresh({message:false});},15000);window.addEventListener('pagehide',()=>clearInterval(timer));
  return{open,changed:()=>{if(dialog.open&&!acting)refresh();},
-  async launchIntent(){if(!$('#f-rewards').checked)return null;const c=ctx.get();await contract();if(!vault)throw Error('Rewards are not activated.');const {budget}=fundingInput($('#f-reward-budget').value,$('#f-reward-days').value);if(await new E.Contract(c.C.USDT,TOKEN_ABI,c.rpc).balanceOf(c.me)<budget)throw Error('Insufficient USDT for the reward budget.');return{amount:fmt(budget),days:Number($('#f-reward-days').value)};},
-  created(address,intent){if(!intent)return;try{localStorage.setItem(intentKey(ctx.get(),address),JSON.stringify(intent));}catch{}void open(address,intent);},
-  ready(){const enabled=!!ctx.get().C.REWARDS;$('#f-rewards').disabled=!enabled;$('#f-rewards-note').textContent=enabled?'After token creation, approve and fund the USDT campaign. These are separate transactions; rewards start only after funding confirms.':'Rewards are awaiting activation. You can still create and trade tokens.';}
+  async launchIntent(){if(!$('#f-rewards').checked)return null;const c=ctx.get('new');await contract('new');if(!vault)throw Error('Rewards are not activated.');const {budget}=fundingInput($('#f-reward-budget').value,$('#f-reward-days').value);if(await new E.Contract(c.C.USDT,TOKEN_ABI,c.rpc).balanceOf(c.me)<budget)throw Error('Insufficient USDT for the reward budget.');return{amount:fmt(budget),days:Number($('#f-reward-days').value)};},
+  created(address,intent){if(!intent)return;try{localStorage.setItem(intentKey(ctx.get(token),address),JSON.stringify(intent));}catch{}void open(address,intent);},
+  ready(){const enabled=!!ctx.get('new').C.REWARDS;$('#f-rewards').disabled=!enabled;$('#f-rewards-note').textContent=enabled?'After token creation, approve and fund the USDT campaign. These are separate transactions; rewards start only after funding confirms.':'Rewards for new Flap launches are awaiting activation. Existing campaigns remain available.';}
  };
 }

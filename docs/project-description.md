@@ -1,26 +1,29 @@
 # Anything
 
-## Short description for GMGN
-
-Anything is a BNB Chain launchpad for asset-inspired tokens. Stocks, gold, burgers, game items, collectibles — launch a token around anything. Choose a reference, trade on a bonding curve and graduate to PancakeSwap. Reference prices add context; token prices remain market-driven.
-
-## Website description
+## Short description
 
 Create a token. With anything.
 
-Anything brings token creation and trading into one terminal on BNB Chain. Explore 276 references across stocks, crypto, commodity futures, food, indices, game items, collectibles and unusual ideas — or name your own. Discover more than 200 fictional meme references, from a housefly IPO to cloud rental, with themed browsing and a Surprise me button. See available prices with their source and date, then create your token from the same screen.
+Anything is a BNB Chain launchpad for asset-inspired tokens. Choose a reference — stocks, gold, crypto, a burger or a game item — add your identity, and launch. New launches use Flap, with product references and optional creator-funded USDT staking campaigns managed on Anything.
 
-Your launches appear in My tokens. Trade on the bonding curve until the BNB funding threshold is reached, then continue in the token’s PancakeSwap liquidity pool.
+## Website description
 
-Asset references do not back tokens, fix their trading price or provide redemption rights. Some quotes are delayed, historical, manually maintained or unavailable. The creator receives the liquidity tokens at graduation and can withdraw the liquidity. Curve trades carry a 1% fee; network fees also apply. The contracts are not audited.
+From an idea to a token, in one terminal.
+
+Explore priced references with their sources and dates. Add your token's avatar, description and X profile. Launch through Flap, follow trading on its bonding curve, and keep your launches together in My tokens.
+
+Creators can fund an optional USDT reward campaign. Holders deposit tokens, accrue their share of the campaign budget and claim USDT. Product coupon equivalents give those rewards context; deposited tokens can be withdrawn at any time.
+
+Reference prices do not back tokens, set their trading price or grant redemption rights. No physical goods are delivered. Flap protocol and network fees apply; the first buy is optional. Real liquidity comes from market participants. External terminal indexing can be delayed. Contracts have not had an independent audit.
 
 Website: https://anypair.vercel.app/
+X: https://x.com/anythingonbnb
 Source: https://github.com/daniilbersin-png/anypair
 
 ## Social bio
 
-Create a token. With anything. Stocks, gold, burgers, collectibles and ideas. Asset-inspired tokens on BNB Chain. Launch → trade → PancakeSwap.
+Create a token. With anything. Asset-inspired tokens on BNB Chain. Launch through Flap. Fund USDT rewards. Build your market.
 
-## Submission note
+## Publication note
 
-No GMGN profile has been edited or submitted. The project’s own meme-coin address was not provided. This copy does not imply that every token launched on the platform is an official project token.
+Flap launches require the gateway activation described in README. Existing tokens keep their original contracts and reward campaigns. No GMGN project profile has been submitted by this update; the project's official meme-coin address must be identified separately before attaching this description to a token.

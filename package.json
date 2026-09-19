@@ -12,7 +12,10 @@
     "test:rewards-fork": "node scripts/test-rewards.mjs --fork",
     "build:rewards": "forge build --root contracts && node scripts/build-rewards.mjs",
     "dev:rewards": "node scripts/qa.mjs --rewards",
-    "test:profile-launch": "node scripts/test-profile-launch.mjs"
+    "test:profile-launch": "node scripts/test-profile-launch.mjs",
+    "build:flap": "forge build --root contracts && node scripts/build-flap.mjs",
+    "test:flap": "node scripts/test-flap.mjs",
+    "dev:flap": "node scripts/qa.mjs --flap"
   },
   "devDependencies": {
     "ethers": "6.15.0"

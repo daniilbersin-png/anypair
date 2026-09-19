@@ -1,77 +1,64 @@
 # Anything
 
-A BNB Chain launchpad for asset-inspired tokens. Create a token, trade on its bonding curve, and graduate to PancakeSwap. External and on-chain asset prices are references; they do not back tokens or control the trading price.
+Anything is an English-language BNB Chain launchpad for asset-inspired tokens. Choose a published-price reference, add an avatar and X profile, launch, trade, and optionally fund a USDT staking campaign. Reference prices provide context; they do not back tokens, peg their price, or create redemption rights.
 
-Live site: https://anypair.vercel.app/
+Live site: https://anypair.vercel.app/ · X: https://x.com/anythingonbnb
 
-## Current deployment
+## New launches through Flap
 
-- Network: BNB Chain, chain ID 56.
-- Launchpad: `0xd860536cff34829f4d3Fdb678E81bD1C8A81785E`.
-- Oracle: `0xCd880c37Df6BA0889F5Cf2398D2F25B9b7bF6011`.
-- Router: canonical PancakeSwap V2 `0x10ED43C718714eb63d5aA57B78B54704E256024E`.
-- Token supply: 1 billion. 800 million on the curve; 200 million reserved for the DEX.
-- At graduation, unsold curve tokens go to the burn address. **LP tokens go to the creator and can be withdrawn.**
-- Curve fee: 1% per buy/sell. Creation fee, virtual BNB and graduation threshold are owner-configurable and read from the contract by the UI.
+New creation uses Flap's `newTokenV7` standard non-tax TokenV3 path. The Anything gateway records the original creator and product reference, forwards first-buy tokens and refunds to that creator, and enforces the reviewed token address. It has no owner, upgrade mechanism, withdrawal function, or additional launch fee. The external Flap protocol retains its own controls and fees.
 
-The deployed contracts are not audited. This frontend update does not deploy or alter them, change their configuration, operate the oracle updater, or send real-money transactions.
+- BNB Chain (56), Flap Portal: `0xe2cE6ab80874Fa9Fa2aAE65D277Dd6B8e65C9De0`.
+- Flap salt reservation fee is read live. At the integration check it was **0.01 BNB**, plus network fees. The fee is not a liquidity deposit.
+- A first buy is optional. Virtual reserves determine the curve price; real reserves come from buyers. Flap handles migration to PancakeSwap Infinity CL.
+- The current V7 configuration uses Flap's BNB dividend mode for pool fees, with a 10,000-token eligibility threshold. This is separate from Anything's creator-funded USDT staking campaigns.
+- Flap's `TokenCreated.creator` is the gateway factory. Anything's registry records the original user wallet as creator, and the new rewards vault uses that registry for funding permissions.
+- Token avatar, description and X profile are published through Flap's documented IPFS upload service before the launch review. Profiles are public. Flap/terminal indexing remains external and can be delayed; a link does not prove successful indexing.
 
-## Frontend
+The gateway and its rewards vault require one-time activation. Open `/flap-setup.html`, connect the owner's chosen wallet, review the network fee, and have the wallet owner confirm deployment. This deploys `AnythingFlapDeployment`, which creates both contracts in one transaction. It launches no token and transfers no USDT. The page checks runtime bytecode, Flap address, USDT and the vault's registry binding. After on-chain verification, publish its addresses as `FLAP_GATEWAY` and `FLAP_REWARDS` in `config.js`. Until configured, new launch transactions are disabled.
 
-The English terminal includes EIP-6963 wallet selection with injected-wallet fallback, chain/account checks before transactions, a creation review with gas estimate, explicit 0.5% / 1% / 3% minimum-output protection for curve trades, exact sell allowances, pending transaction recovery, current oracle timestamps, session-only observed charts, and post-graduation pool prices/links.
+## Existing tokens and rewards
 
-Token metadata is untrusted: all dynamic HTML values are escaped. RPC errors are rendered as text. Decimal inputs and transaction amounts use bigint, without floating-point conversions. The bundled ethers library avoids depending on a third-party script CDN at signing time.
+Existing contracts are unchanged:
 
-Quotes are valid in the UI for 30 seconds; creation reviews for two minutes. The deployed contract has no transaction deadline or first-buy minimum-output parameter. The UI rechecks quotes/settings before sending; ordinary trades enforce minimum output on-chain. A wallet can still alter or delay a transaction. No mainnet automatic trading is performed.
+- Original launchpad: `0xd860536cff34829f4d3Fdb678E81bD1C8A81785E`.
+- Original oracle: `0xCd880c37Df6BA0889F5Cf2398D2F25B9b7bF6011`.
+- Original rewards: `0x642DDE407BA98C483ED80A10C2ae4FeF44338988`.
+- BNB-chain USDT: `0x55d398326f99059ff775485246999027b3197955`.
 
-The market monitor loads the latest 200 tokens in pages and refreshes all current state every 15 seconds. The graph consists only of observations collected while the page is open. It is not historical OHLC data. Market-cap estimates exclude the burn-address balance after graduation and are shown in BNB, avoiding a hard-coded USD conversion.
+Old tokens cannot become Flap tokens at their existing addresses. Their original curve trades and rewards continue on the old contracts. Old PancakeSwap V2 pool creation still depends on their configured graduation threshold; old LP tokens belong to the creator and can be withdrawn. Hidden launches stay out of listings. Existing deposits, claims and eligible refunds remain accessible by entering a hidden token's contract address; new funding/deposits for hidden tokens are disabled.
 
-## Asset catalogue
+## USDT rewards
 
-The Anything frontend offers 276 references with category filters, with search, custom references, per-item launch buttons and a compact expandable My tokens panel. My tokens shows creations by the connected wallet among the latest 200 scanned launches, not wallet holdings. Browse all explicitly opens the public market list.
+The creator separately approves and deposits a USDT budget after launch. Holders deposit tokens, receive their proportional share of emissions over time, claim USDT and withdraw tokens without a lock period. Campaign funds, committed rewards and unused emissions follow `AnyPairRewards.sol`; no change was made to its accounting for the Flap integration.
 
-The Memes category contains 202 fictional references (200 new ideas plus two existing concepts) across ten themes. Theme filters and Surprise me make the larger catalogue easier to browse. Meme cards, launch reviews and selected-token details explicitly identify fiction; neither the browser nor the quote API fabricates an underlying price. The token itself still trades through the existing bonding curve.
+A product “coupon” is an informational estimate of a USDT entitlement divided by the current usable reference price and USDT/USD conversion. It is not a physical voucher or an extra token. A quote outage does not block USDT claims or token withdrawals. New and legacy token registries route to separate vaults, including contract-address lookup beyond the latest listings.
 
-`lib/assets.mjs` is the shared allowlist. New references are stored as `anything:<asset-id>` in the existing contract’s `assetKey`, so they remain identifiable on other devices. Custom names use `Custom: <name>`. Quotes are display-only; they do not change the deployed bonding curve. Existing direct oracle feeds retain their feed IDs where units match. Coal is explicitly per kilogram, using the manual per-tonne index divided by 1,000.
+## Asset catalogue and frontend
 
-The read-only `/api/quotes` Vercel function retrieves Coinbase USD spot quotes, Yahoo Finance latest market/futures quotes, and The Economist’s published Big Mac survey. It validates known IDs, caps batches at eight, times out providers, and caches responses. No API key or signing key is used. Yahoo values quoted in US cents are converted to USD, and indices are labelled in points. Public endpoints may be delayed, rate-limited or unavailable; they are not an execution-price service. Production-scale data use may require appropriate provider licensing.
+`lib/assets.mjs` contains the allowlisted source-backed references. The UI only offers entries with usable positive prices, with sources and dates. Fictional and unpriced references were removed. Quotes come from Coinbase, Yahoo Finance, The Economist's published Big Mac survey and eligible existing oracle feeds. Quote endpoints are read-only, bounded and cached. They are display data, not execution prices or a continuously operated oracle. Big Mac source data is MIT-licensed; its notice is in `assets/big-mac-data-LICENSE.txt`.
 
-Whopper, rare collectibles and unusual ideas without a reliable universal feed remain selectable but show **No verified quote**. The EUDA entry links only to public historical research; no current illicit-market price or supplier is provided. Unavailable data never becomes a fabricated price. Source brands identify references and do not imply affiliation.
+The separate `oracle-service` is not run by Vercel. Its historical manually seeded or simulated feeds are not made live by this integration.
 
-Big Mac source data: [The Economist](https://github.com/TheEconomist/big-mac-data), MIT licence, included in `assets/big-mac-data-LICENSE.txt`.
+Wallet support uses EIP-6963 and injected-wallet fallback, with chain/account checks before signatures. Trades enforce a minimum output on-chain; exact token allowances are requested. Launch reviews expire after two minutes, trade quotes after 30 seconds. First-buy execution follows Flap's launch rules; no minimum output parameter exists in its launch call. A wallet can alter or delay a transaction. All token/profile text is untrusted and rendered safely.
 
-## Oracle limits
+The terminal scans the latest 200 tokens per engine, and supports a Flap token deep link outside that window. My tokens identifies creators, not wallet holdings. Charts are observations collected during the current session, not historical OHLC. Full charts and indexing are provided by external terminals. There is no guarantee of inclusion on every terminal.
 
-REAL / INDEX / LARP are feed categories, not verification of source accuracy. The deployment script seeded prices manually. At the handoff check, all eight feeds still carried their deployment timestamp. The UI now shows the timestamp and flags prices past the oracle's configured `maxStale` interval. A fresh timestamp alone does not prove a live market feed.
-
-The `oracle-service` directory is separate from this static Vercel site. Some INDEX/LARP feeds are simulated. It has not been started or given a signing key by this update. Automatic real-world price updates require a separately operated updater and suitable data sources; Vercel static hosting does not run its loop.
-
-## Build and validation
+## Build, testing and deployment
 
 ```sh
 pnpm install --frozen-lockfile
 pnpm test
+pnpm build:flap
+pnpm test:flap
 pnpm build
-pnpm test:fork
-pnpm dev:qa
+pnpm dev:flap
 ```
 
-The build copies only public frontend assets into `public/`. Vercel publishes that directory and builds the root `api/quotes.js` serverless function. `main` is connected to the existing Vercel project, so pushed changes trigger production deployment.
+Flap contract checks use Foundry/Anvil. Set `ANVIL_BIN` if it is not at `~/.foundry/bin/anvil`; optionally set `FORK_RPC_URL` to a BNB read endpoint. All writes use randomly generated local test accounts on a loopback-only Anvil fork. Public RPCs are read-only. Public endpoints may prune old state quickly; restart a stale QA fork or use an archive RPC.
 
-`test:fork` and `dev:qa` require Foundry's Anvil (`~/.foundry/bin/anvil`, or `ANVIL_BIN`). They fork BNB state with read-only public RPC calls and use randomly generated local accounts. **All transaction writes go to Anvil on a loopback port.** Anvil is needed because the fee-recipient account uses EIP-7702 delegation, unsupported by older local simulators.
+The browser QA URL is `http://127.0.0.1:4184/?qa=1`. It uses disposable test BNB and mock USDT. QA RPC endpoints, test scripts and wallet secrets are not included in production. The production build copies public files to `public/`; Vercel builds the root quote and Flap upload functions. Pushing `main` triggers the connected Vercel deployment.
 
-The browser QA URL is `http://127.0.0.1:4184/?qa=1`. The test server verifies Host/Origin and exposes its local RPC only on loopback. Neither that server nor its RPC endpoints are part of the production build. No `.env`, private keys or wallet secrets are needed for these checks.
+Validation includes 30 Node unit checks, the existing Solidity suite, and a disposable mainnet fork exercising actual Flap V7 creation without a first buy, event/metadata/creator mapping, curve buy/sell, rejected fee/address/duplicate cases, creator-only USDT funding, staking, accrual, claiming and withdrawal. Browser QA additionally checks avatar upload and the launch-to-funding flow. Tests are not an independent audit. No real mainnet launch or terminal-indexing success is claimed by the local checks.
 
-Validation on 19 September 2026:
-
-- 14 unit checks, including reference persistence, creator filtering, CSV parsing, quote units and API input validation; plus: decimal precision, output minimums, fee/curve math, reserve bounds, feed freshness, HTML escaping and metadata validation.
-- Deployed AnyPair contract on a disposable fork at block **122828686**: creation, curve buy/sell, minimum-output rejection, exact approval, graduation, creator LP ownership and PancakeSwap purchase passed.
-- No real mainnet transactions were sent by these checks.
-
-Original Solidity tests are in `contracts/test`; the pinned dependency revisions are in `contracts/foundry.lock`.
-
-## Project copy and terminal listing
-
-English project copy is in [docs/project-description.md](docs/project-description.md), and the site has an About dialog and metadata. No GMGN profile has been submitted or edited. A link to a token page does not prove indexing. The project's official meme-coin address has not been identified in this handoff.
-
-Sources: [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963), [PancakeSwap V2](https://developer.pancakeswap.finance/contracts/v2/addresses), [DEX Screener listing](https://docs.dexscreener.com/token-listing).
+Contract and UI setup: `contracts/src/AnythingFlapGateway.sol`, `flap-setup.html`. Sources: [Flap launch documentation](https://docs.flap.sh/flap/developers/token-launcher-developers/launch-token-through-portal), [Flap deployed addresses](https://docs.flap.sh/flap/developers/deployed-contract-addresses).
