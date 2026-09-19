@@ -46,6 +46,7 @@ async function fetchAll() {
     } catch (e) {
       console.warn(`  ✗ ${f.key.padEnd(24)} ${e.message}`);
     }
+    await new Promise((r) => setTimeout(r, 300)); // throttle: avoid API rate limits
   }
   return out;
 }
