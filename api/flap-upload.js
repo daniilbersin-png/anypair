@@ -17,7 +17,7 @@ export function createUploadHandler(upstream=fetch){return async function handle
  }catch(e){res.statusCode=400;return res.end(JSON.stringify({error:e.message}));}
  try{
   const asset=BY_ID.get(reference),form=new FormData();
-  const meta={creator,description:[profile.description,'Asset reference: '+asset.name+' ('+asset.unit+'). Reference only; no price peg or redemption guarantee.'].filter(Boolean).join('\n\n'),twitter:profile.x||null,telegram:null,website:'https://anypair.vercel.app/?token='+token+'&reference='+reference};
+  const meta={creator,description:[profile.description,'Asset reference: '+asset.name+' ('+asset.unit+'). Reference only; no price peg or redemption guarantee.'].filter(Boolean).join('\n\n'),twitter:profile.x||null,telegram:null,website:'https://anythingpad.tech/?token='+token+'&reference='+reference};
   form.append('operations',JSON.stringify({query:'mutation Create($file: Upload!, $meta: MetadataInput!) { create(file: $file, meta: $meta) }',variables:{file:null,meta}}));
   form.append('map',JSON.stringify({'0':['variables.file']}));form.append('0',new Blob([Buffer.from(profile.avatar.split(',')[1],'base64')],{type:'image/webp'}),'avatar.webp');
   const response=await upstream('https://funcs.flap.sh/api/upload',{method:'POST',body:form,signal:AbortSignal.timeout(20000)});

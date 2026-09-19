@@ -2,7 +2,7 @@
 
 Anything is an English-language BNB Chain launchpad for asset-inspired tokens. Choose a published-price reference, add an avatar and X profile, launch, trade, and optionally fund a USDT staking campaign. Reference prices provide context; they do not back tokens, peg their price, or create redemption rights.
 
-Live site: https://anypair.vercel.app/ · X: https://x.com/anythingonbnb
+Live site: https://anythingpad.tech/ · X: https://x.com/anythingonbnb
 
 ## New launches through Flap
 

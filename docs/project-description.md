@@ -16,7 +16,7 @@ Creators can fund an optional USDT reward campaign. Holders deposit tokens, accr
 
 Reference prices do not back tokens, set their trading price or grant redemption rights. No physical goods are delivered. Flap protocol and network fees apply; the first buy is optional. Real liquidity comes from market participants. External terminal indexing can be delayed. Contracts have not had an independent audit.
 
-Website: https://anypair.vercel.app/
+Website: https://anythingpad.tech/
 X: https://x.com/anythingonbnb
 Source: https://github.com/daniilbersin-png/anypair
 
