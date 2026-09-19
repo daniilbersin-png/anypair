@@ -290,44 +290,50 @@ async function boot(){
     setInterval(poll,6000);
     setInterval(()=>{ $("#clock").textContent=new Date().toTimeString().slice(0,8); },1000);
     // auto-reconnect if wallet already authorized
-    if(window.ethereum){
-      const accs = await window.ethereum.request({method:"eth_accounts"}).catch(()=>[]);
-      if(accs && accs.length) connect();
-    }
+    const pp=pickProvider();
+    if(pp){ const accs=await pp.request({method:"eth_accounts"}).catch(()=>[]); if(accs&&accs.length) connect(); }
   }catch(e){ $("#bootmsg").innerHTML="CONNECTION FAILED<br><span style='color:#ff433d'>"+e.message+"</span>"; }
 }
 
 /* ---------- wallet ---------- */
+let eth=null;
+function pickProvider(){
+  const e=window.ethereum;
+  if(!e) return null;
+  if(Array.isArray(e.providers)&&e.providers.length){
+    return e.providers.find(p=>p.isMetaMask)||e.providers.find(p=>p.isTrust)||e.providers[0];
+  }
+  return e;
+}
 $("#netbtn").onclick=connect;
 async function connect(){
-  if(!window.ethereum){ status("NO WALLET — install MetaMask"); alert("MetaMask не найден. Установи расширение MetaMask и обнови страницу."); return; }
+  eth=pickProvider();
+  if(!eth){ status("NO WALLET"); alert("Кошелёк не найден в этом браузере.\n\nОткрой сайт в Chrome, где установлен MetaMask (иконка лисы 🦊 в панели расширений), и обнови страницу."); return; }
   try{
-    await window.ethereum.request({method:"eth_requestAccounts"});
+    status("OPENING WALLET…");
+    await eth.request({method:"eth_requestAccounts"});
     await ensureChain();
-    browserProvider = new ethers.BrowserProvider(window.ethereum);
-    signer = await browserProvider.getSigner();
-    me = await signer.getAddress();
-    padWrite = new ethers.Contract(C.LAUNCHPAD, PAD_ABI, signer);
+    browserProvider=new ethers.BrowserProvider(eth);
+    signer=await browserProvider.getSigner();
+    me=await signer.getAddress();
+    padWrite=new ethers.Contract(C.LAUNCHPAD,PAD_ABI,signer);
     $("#netdot").classList.add("on");
-    $("#netlbl").textContent = short(me);
-    $("#st-addr").textContent = "WALLET: "+short(me);
-    await updateBal();
-    updateExecLabel();
+    $("#netlbl").textContent=short(me);
+    $("#st-addr").textContent="WALLET: "+short(me);
+    await updateBal(); updateExecLabel();
     status("WALLET CONNECTED · "+short(me));
-    window.ethereum.on&&window.ethereum.on("accountsChanged",()=>location.reload());
-    window.ethereum.on&&window.ethereum.on("chainChanged",()=>location.reload());
-  }catch(e){ status("CONNECT FAILED · "+(e.shortMessage||e.message)); }
+    eth.on&&eth.on("accountsChanged",()=>location.reload());
+    eth.on&&eth.on("chainChanged",()=>location.reload());
+  }catch(e){ const m=e.shortMessage||e.message||"error"; status("CONNECT FAILED · "+m);
+    alert("Не удалось подключить кошелёк:\n"+m+"\n\nЕсли стоят и Phantom, и MetaMask — они конфликтуют. Кликни иконку MetaMask 🦊 и подтверди запрос там, либо в Phantom отключи «Default Ethereum wallet»."); }
 }
 async function ensureChain(){
-  const cid = await window.ethereum.request({method:"eth_chainId"});
+  const cid=await eth.request({method:"eth_chainId"});
   if(cid===C.CHAIN_HEX) return;
-  try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:C.CHAIN_HEX}]}); }
-  catch(e){
-    if(e.code===4902){ await window.ethereum.request({method:"wallet_addEthereumChain",params:[{
-      chainId:C.CHAIN_HEX, chainName:C.CHAIN_NAME, nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},
-      rpcUrls:[C.RPC_URL], blockExplorerUrls:[C.EXPLORER] }]}); }
-    else throw e;
-  }
+  try{ await eth.request({method:"wallet_switchEthereumChain",params:[{chainId:C.CHAIN_HEX}]}); }
+  catch(e){ if(e.code===4902){ await eth.request({method:"wallet_addEthereumChain",params:[{
+    chainId:C.CHAIN_HEX, chainName:C.CHAIN_NAME, nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},
+    rpcUrls:[C.RPC_URL], blockExplorerUrls:[C.EXPLORER] }]}); } else throw e; }
 }
 async function updateBal(){
   if(!me) return;
