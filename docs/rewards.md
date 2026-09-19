@@ -1,6 +1,6 @@
 # Creator-funded rewards
 
-Status: website implementation complete; production requires a separately deployed rewards contract and its verified address in `config.js`. Until then, `REWARDS: null` disables deposits and funding. No production reward campaign exists merely because the website is published.
+Status: activated on BNB Chain on 2026-09-19 at `0x642DDE407BA98C483ED80A10C2ae4FeF44338988`. Its runtime bytecode, immutable launchpad and USDT addresses, version and reward-token decimals were checked against the tested build before adding the address to `config.js`. At activation, all three existing launchpad tokens had zero funding and zero deposits. Creators still need to fund individual campaigns before rewards accrue.
 
 ## User flow
 
@@ -35,6 +35,8 @@ Only usable USD quotes are converted. Fictional/missing references, managed INDE
 
 ## Activation
 
+The current rewards contract is already deployed and configured: `0x642DDE407BA98C483ED80A10C2ae4FeF44338988`. Do not deploy it again. The following describes the one-time deployment flow for maintainers.
+
 Open `/rewards-setup.html` using a browser with a BNB wallet. Review the fixed constructor addresses and estimated maximum gas cost. Deployment is a separate wallet-signed transaction and transfers no USDT. The page records the transaction hash and verifies the confirmed runtime. It does **not** automatically change the official site configuration.
 
 After receiving the address, verify its bytecode/immutables with `verifyRewards`, set only `REWARDS` in `config.js`, build and publish through the existing GitHub → Vercel integration. Confirm the live UI verifies the contract before any real funding. The deployer has no privileged role in the rewards contract. BscScan source verification is an additional publication step after obtaining the deployed address; do not claim it has happened before then.
@@ -49,4 +51,4 @@ No private keys are needed by the website or its quote API. No mainnet transacti
 - `node scripts/test-rewards.mjs --fork`: local copy of the actual BNB launchpad and actual BSC USDT, using test-only balances set in Anvil. Public RPC is read-only; all transactions go to a loopback server.
 - `node scripts/qa.mjs --rewards`: local browser QA, including token creation with a pending reward budget, funding, deposit, claim and withdrawal. The test server enforces loopback Host/Origin and is never included in the published build.
 
-Real mainnet deployment, wallet-provider approval/cancellation, live campaign funding and subsequent real claims remain activation checks; do not describe them as completed by local tests.
+The user completed the real mainnet deployment, and its code and constructor settings were independently read back from BNB Chain. Live campaign funding, deposits and real claims have not been performed by the implementation agent; their successful local tests are not proof of a real funded campaign.

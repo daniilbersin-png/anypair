@@ -9,7 +9,7 @@ window.ANYPAIR_CONFIG = {
   EXPLORER: "https://bscscan.com",
   // Deployed on BSC mainnet via script/DeployApp.s.sol :
   LAUNCHPAD: "0xd860536cff34829f4d3Fdb678E81bD1C8A81785E",
-  REWARDS: null, // Set only after verified wallet deployment.
+  REWARDS: "0x642DDE407BA98C483ED80A10C2ae4FeF44338988", // Runtime bytecode and immutable addresses verified on BNB Chain.
   USDT: "0x55d398326f99059ff775485246999027b3197955", // BSC Binance-Peg USDT, 18 decimals
   ORACLE: "0xCd880c37Df6BA0889F5Cf2398D2F25B9b7bF6011",
 };
