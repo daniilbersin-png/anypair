@@ -20,7 +20,7 @@ The on-chain entitlement is always USDT, with 18 decimals for BSC Binance-Peg US
 
 For example, 6 USDT at 1 USD/USDT and a 3 USD product reference displays approximately 2 coupons. A quote change changes this estimate, not the amount of USDT owed. Coupons are not NFTs, transferable vouchers, physical redemption rights, or token price pegs.
 
-Only usable USD quotes are converted. Fictional/missing references, stale feeds, index points and non-USD prices do not produce invented coupon quantities. Published food surveys are explicitly shown as dated published-price estimates, not live menu prices. Price sources and dates appear alongside the estimate. Quote outages do not block monetary operations. USDT/USD comes from the public Coinbase spot endpoint; its quote is informational and does not guarantee the peg or account for execution fees.
+Only usable USD quotes are converted. Fictional/missing references, managed INDEX/LARP oracle tiers, stale feeds, index points and non-USD prices do not produce invented coupon quantities. Published food surveys are explicitly shown as dated published-price estimates, not live menu prices. Price sources and dates appear alongside the estimate. Quote outages do not block monetary operations. USDT/USD comes from the public Coinbase spot endpoint; its quote is informational and does not guarantee the peg or account for execution fees.
 
 ## Contracts and build
 
