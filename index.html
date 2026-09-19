@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>AnyPair — Launch a market around your idea</title>
+<title>Anything — Create a token. With anything.</title>
 <meta name="description" content="A BNB Chain launchpad for asset-inspired tokens. Create a token, trade on its bonding curve, and graduate to PancakeSwap. Asset references do not guarantee token prices.">
-<meta property="og:title" content="AnyPair — Launch a market around your idea">
+<meta property="og:title" content="Anything — Launch a market around your idea">
 <meta property="og:description" content="Create and trade asset-inspired tokens on BNB Chain. Bonding curves, on-chain references and PancakeSwap graduation.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://anypair.vercel.app/">
@@ -137,12 +137,12 @@
 </style>
 </head>
 <body>
-<div id="boot"><div class="big">ANYPAIR&nbsp;TERMINAL</div><div class="sm" id="bootmsg">CONNECTING TO BNB CHAIN…</div></div>
+<div id="boot"><div class="big">ANYTHING&nbsp;TERMINAL</div><div class="sm" id="bootmsg">CONNECTING TO BNB CHAIN…</div></div>
 
 <div class="app">
   <div class="cmd">
-    <div class="brand">ANYPAIR&lt;GO&gt;</div>
-    <div class="line"><span class="dim">CMD</span> <span id="cmdtext">ANYP</span><span class="caret"></span>
+    <div class="brand">ANYTHING&lt;GO&gt;</div>
+    <div class="line"><span class="dim">CMD</span> <span id="cmdtext">ANYTHING</span><span class="caret"></span>
       <span class="go">&lt;GO&gt;</span>
       <span class="dim" style="margin-left:14px">PAIR ANY ASSET · BNB CHAIN</span>
     </div>
@@ -161,18 +161,21 @@
 
   <div class="main">
     <div class="col left">
-      <div class="pane" style="flex:1;border-bottom:none">
-        <div class="pane-h"><span><span class="code">MKTS</span>ANYPAIR SECURITIES MONITOR</span><span class="r" id="pcount">0 SEC</span></div>
+      <section class="hero"><div class="eyebrow">BNB CHAIN / THE ANYTHING LAUNCHPAD</div><h1>Create a token.<br><em>With anything.</em></h1><p>Gold. A burger. Your favourite stock. A Pokémon card.<br>Launch a token around a commodity, collectible, game item or idea. Trade on its bonding curve, then graduate to PancakeSwap.</p><div class="hero-actions"><button type="button" id="create-token">Create your token <span>↗</span></button><span><b id="catalog-total">—</b> asset references · one launchpad</span></div><p class="reference-disclosure">Asset prices are references. Tokens trade independently and are not backed by the referenced item.</p></section>
+      <div class="pane my-tokens" id="my-tokens">
+        <div class="pane-h"><span><span class="code">YOU</span>MY TOKENS</span><span class="token-tools"><span id="pcount">0 TOKENS</span><button id="token-scope" type="button">Browse all</button><button id="token-expand" aria-expanded="false" type="button">Expand ↕</button></span></div>
         <div class="tbl-wrap">
           <table>
             <thead><tr>
               <th class="l">TICKER</th><th>LAST(nBNB)</th><th>SESSION%</th>
-              <th>RSV(BNB)</th><th>%GRAD</th><th class="l">PAIRED / ORACLE</th>
+              <th>RSV(BNB)</th><th>%GRAD</th><th class="l">ASSET REFERENCE</th>
             </tr></thead>
             <tbody id="sectbody"></tbody>
           </table>
         </div>
       </div>
+      <section class="catalog"><div class="catalog-heading"><h2>Pick your reference.</h2><span id="catalog-count"></span></div><input type="search" id="asset-search" placeholder="Search burgers, gold, Tesla, Pokémon…" aria-label="Search asset references"><div id="catalog-categories" class="categories" aria-label="Reference categories"></div><div id="asset-grid" class="asset-grid"></div><div class="catalog-pager"><button id="catalog-custom" type="button">+ Use your own idea</button><div><button id="catalog-prev" aria-label="Previous references" type="button">←</button><span id="catalog-page"></span><button id="catalog-next" aria-label="Next references" type="button">→</button></div></div></section>
+
     </div>
 
     <div class="col">
@@ -187,7 +190,7 @@
             <div class="k">LAST</div><div class="v tabnum" id="des-last">—</div>
             <div class="k">MKT CAP</div><div class="v tabnum" id="des-mcap">—</div>
             <div class="k">CURVE RSV</div><div class="v tabnum" id="des-rsv">—</div>
-            <div class="k">ORACLE PX</div><div class="v tabnum" id="des-oracle">—</div>
+            <div class="k">REFERENCE PX</div><div class="v tabnum" id="des-oracle">—</div>
             <div class="k">PRICE UPDATED</div><div class="v" id="des-updated">—</div>
             <div class="k">TOKEN</div><div class="v" id="des-addr">—</div>
           </div><div id="market-links" class="market-links"></div><p class="note" id="asset-note">Asset references do not fix token prices or provide redemption rights.</p>
@@ -233,7 +236,7 @@
         <div><label for="f-name">NAME</label><input id="f-name" placeholder="DogeCoal" maxlength="64"></div>
         <div><label for="f-ticker">TICKER</label><input id="f-ticker" placeholder="DCOAL" maxlength="10"></div>
       </div>
-      <div><label for="f-feed">ASSET REFERENCE</label><select id="f-feed"></select></div>
+      <div><label for="f-feed">ASSET REFERENCE</label><select id="f-feed"></select></div><div id="custom-reference" hidden><label for="f-custom">YOUR REFERENCE</label><input id="f-custom" maxlength="80" placeholder="One kilogram of coal, my local burger…"></div>
       <div><label for="f-buy">FIRST BUY (BNB, optional)</label><input id="f-buy" inputmode="decimal" placeholder="0.01"></div>
       <p class="note" id="feed-detail"></p><p class="note">1 billion tokens: 800 million on the curve, 200 million reserved for PancakeSwap. Unsold curve tokens go to the burn address at graduation. The creator receives the LP tokens and can withdraw liquidity.</p>
       <button class="exec buy" id="f-deploy">REVIEW LAUNCH</button>
@@ -244,9 +247,10 @@
 </div>
 
 <dialog id="wallet-dialog"><div class="mh">CHOOSE WALLET <button id="wallet-close" aria-label="Close wallet chooser">[X]</button></div><div id="wallet-options" class="mb"></div><p class="note">Use a browser with an installed wallet extension, or your mobile wallet’s built-in browser. Private keys are never requested by this site.</p></dialog>
-<dialog id="about-dialog"><div class="mh">ABOUT ANYPAIR <button id="about-close" aria-label="Close about">[X]</button></div><div class="mb"><h1>Launch a market around your idea.</h1><p>AnyPair is a BNB Chain launchpad for asset-inspired tokens. Create a token around a commodity, collectible, game item or meme, trade on its bonding curve, and graduate to PancakeSwap.</p><h2>References, with context</h2><p>Asset prices are on-chain references. They do not back tokens, set their trading price, or provide redemption rights. REAL, INDEX and LARP are feed categories; always check the price timestamp. Values may be seeded manually, managed or fictional.</p><h2>From curve to PancakeSwap</h2><p id="about-config">Loading current launchpad settings…</p><p>LP tokens go to the creator at graduation. They are not locked: the creator can withdraw liquidity. The launchpad owner can change curve settings and fees. The contracts are not audited.</p><h2>Find a token</h2><p>Use its contract address. A token created here is not automatically listed on GMGN. Terminal visibility depends on the service’s supported markets and indexing.</p><div class="market-links"><a href="https://github.com/daniilbersin-png/anypair" target="_blank" rel="noopener noreferrer">SOURCE ↗</a><a href="https://bscscan.com/address/0xd860536cff34829f4d3Fdb678E81bD1C8A81785E" target="_blank" rel="noopener noreferrer">LAUNCHPAD ↗</a></div></div></dialog>
+<dialog id="about-dialog"><div class="mh">ABOUT ANYTHING <button id="about-close" aria-label="Close about">[X]</button></div><div class="mb"><h1>Launch a market around your idea.</h1><p>Anything is a BNB Chain launchpad for asset-inspired tokens. Create a token around a commodity, collectible, game item or meme, trade on its bonding curve, and graduate to PancakeSwap.</p><h2>References, with context</h2><p>Choose from stocks, crypto, commodity futures, published food surveys, game items, collectibles and unusual ideas. External prices include their source and date; some references have no verified quote. On-chain feeds may be manually maintained and stale. References do not back tokens, set their trading price or provide redemption rights.</p><h2>From curve to PancakeSwap</h2><p id="about-config">Loading current launchpad settings…</p><p>LP tokens go to the creator at graduation. They are not locked: the creator can withdraw liquidity. The launchpad owner can change curve settings and fees. The contracts are not audited.</p><h2>Find a token</h2><p>Use its contract address. A token created here is not automatically listed on GMGN. Terminal visibility depends on the service’s supported markets and indexing.</p><div class="market-links"><a href="https://github.com/daniilbersin-png/anypair" target="_blank" rel="noopener noreferrer">SOURCE ↗</a><a href="https://bscscan.com/address/0xd860536cff34829f4d3Fdb678E81bD1C8A81785E" target="_blank" rel="noopener noreferrer">LAUNCHPAD ↗</a></div></div></dialog>
 <script src="assets/ethers.umd.min.js"></script>
 <script src="config.js"></script>
+<link rel="stylesheet" href="catalog.css">
 <script type="module" src="app.js"></script>
 </body>
 </html>
