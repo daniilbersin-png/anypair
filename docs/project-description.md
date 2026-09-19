@@ -26,4 +26,4 @@ Create a token. With anything. Asset-inspired tokens on BNB Chain. Launch throug
 
 ## Publication note
 
-Flap launches require the gateway activation described in README. Existing tokens keep their original contracts and reward campaigns. No GMGN project profile has been submitted by this update; the project's official meme-coin address must be identified separately before attaching this description to a token.
+Flap launches use the activated gateway listed in README. Existing tokens keep their original contracts and reward campaigns. No GMGN project profile has been submitted by this update; the project's official meme-coin address must be identified separately before attaching this description to a token.

@@ -2,8 +2,8 @@
 // No private keys here: the app connects the visitor's MetaMask for signing.
 // Reads use a public RPC; writes go through the connected wallet.
 window.ANYPAIR_CONFIG = {
-  FLAP_GATEWAY: null, // Activated after the one-time Flap setup transaction.
-  FLAP_REWARDS: null,
+  FLAP_GATEWAY: "0x19E095ec220860F20e3E59d53AcB157628C4cC95", // Runtime, Portal and registry verified on BNB Chain.
+  FLAP_REWARDS: "0x1cd788E2B8a06F45822a321F4C25278bcF514662", // Runtime, gateway binding and USDT verified.
   RPC_URL: "https://bsc-dataseed.bnbchain.org", // public read RPC
   CHAIN_ID: 56,
   CHAIN_HEX: "0x38",

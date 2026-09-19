@@ -15,7 +15,15 @@ New creation uses Flap's `newTokenV7` standard non-tax TokenV3 path. The Anythin
 - Flap's `TokenCreated.creator` is the gateway factory. Anything's registry records the original user wallet as creator, and the new rewards vault uses that registry for funding permissions.
 - Token avatar, description and X profile are published through Flap's documented IPFS upload service before the launch review. Profiles are public. Flap/terminal indexing remains external and can be delayed; a link does not prove successful indexing.
 
-The gateway and its rewards vault require one-time activation. Open `/flap-setup.html`, connect the owner's chosen wallet, review the network fee, and have the wallet owner confirm deployment. This deploys `AnythingFlapDeployment`, which creates both contracts in one transaction. It launches no token and transfers no USDT. The page checks runtime bytecode, Flap address, USDT and the vault's registry binding. After on-chain verification, publish its addresses as `FLAP_GATEWAY` and `FLAP_REWARDS` in `config.js`. Until configured, new launch transactions are disabled.
+Flap was activated on 19 September 2026 with these verified BNB Chain contracts:
+
+- Deployment: `0x84F90BACc537EFE6B5B745731Be2b28E48eb3E63`.
+- Gateway: `0x19E095ec220860F20e3E59d53AcB157628C4cC95`.
+- USDT rewards: `0x1cd788E2B8a06F45822a321F4C25278bcF514662`.
+
+Runtime bytecode, the Flap Portal, USDT and the vault's registry binding were checked against the published build. A read-only mainnet simulation through the deployed gateway successfully created a standard Flap token at its predicted address with no first buy; no transaction was sent by that check. Activation itself does not launch tokens or fund reward campaigns.
+
+`/flap-setup.html` is the one-time deployment page and now reports that the gateway is already configured. Do not redeploy it to create a token: use Create your token on the terminal.
 
 ## Existing tokens and rewards
 
