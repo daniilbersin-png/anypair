@@ -1,89 +1,63 @@
-# AnyPair — launchpad on BNB Chain where a token is paired to *anything*
+# AnyPair
 
-Launch a meme token whose price is anchored, via an on-chain oracle, to an arbitrary
-real-world asset: a CS2 skin, a Pokémon/TCG card, gold, coal, chicken eggs, solar
-energy — or a pure meme. Trading runs on a self-contained bonding curve (pump.fun
-style) and graduates to PancakeSwap.
+A BNB Chain launchpad for asset-inspired tokens. Create a token, trade on its bonding curve, and graduate to PancakeSwap. On-chain asset prices are references; they do not back tokens or control the trading price.
 
-> **Status:** backend complete and tested (contracts + oracle service). Frontend is
-> the next phase. **Not audited — BSC Testnet only until a professional audit.**
+Live site: https://anypair.vercel.app/
 
-## Repository
+## Current deployment
 
-```
-contracts/        Solidity (Foundry) — the on-chain core
-  src/
-    PriceOracle.sol        on-chain price registry (REAL / INDEX / LARP tiers)
-    AnyPairToken.sol       fixed-supply ERC20 minted per launch
-    AnyPairLaunchpad.sol   factory + bonding curve + graduation to PancakeSwap
-    interfaces/IPancakeRouter02.sol
-  test/                    12 passing tests (curve, oracle link, graduation, solvency)
-  script/Deploy.s.sol      BSC testnet deploy + starter feeds
-oracle-service/   Node.js — fetches live prices and pushes them on-chain
-  src/feeds.js             feed registry (Steam Market, Coinbase, index, larp)
-  src/index.js             batched updater loop (supports DRY_RUN)
-web/              (frontend — later)
-prototype.html    the visual concept prototype (Phase 1)
-```
+- Network: BNB Chain, chain ID 56.
+- Launchpad: `0xd860536cff34829f4d3Fdb678E81bD1C8A81785E`.
+- Oracle: `0xCd880c37Df6BA0889F5Cf2398D2F25B9b7bF6011`.
+- Router: canonical PancakeSwap V2 `0x10ED43C718714eb63d5aA57B78B54704E256024E`.
+- Token supply: 1 billion. 800 million on the curve; 200 million reserved for the DEX.
+- At graduation, unsold curve tokens go to the burn address. **LP tokens go to the creator and can be withdrawn.**
+- Curve fee: 1% per buy/sell. Creation fee, virtual BNB and graduation threshold are owner-configurable and read from the contract by the UI.
 
-## How it works
+The deployed contracts are not audited. This frontend update does not deploy or alter them, change their configuration, operate the oracle updater, or send real-money transactions.
 
-1. **Create** a pair: name, ticker, paired asset + its oracle feed. The whole token
-   supply (1B) is minted to the launchpad; 800M sells via the curve, 200M is reserved
-   for DEX liquidity.
-2. **Trade** on a constant-product bonding curve with virtual reserves. It holds real
-   BNB and is **always solvent** — you can never extract more BNB than was put in.
-3. **Oracle link** is genuinely on-chain: the paired asset's price is snapshotted at
-   launch and stays queryable live (`assetPrice(token)`), so the app shows real
-   token-vs-asset tracking. Every feed's trust tier is always visible.
-4. **Graduate**: once the curve raises `graduationThreshold` BNB, the raised BNB + the
-   reserved tokens are deposited as PancakeSwap liquidity and the **LP is burned**
-   (locked forever).
+## Frontend
 
-### The honest bit about the oracle
+The English terminal includes EIP-6963 wallet selection with injected-wallet fallback, chain/account checks before transactions, a creation review with gas estimate, explicit 0.5% / 1% / 3% minimum-output protection for curve trades, exact sell allowances, pending transaction recovery, current oracle timestamps, session-only observed charts, and post-graduation pool prices/links.
 
-Fully paying out an external asset's price 1:1 on redemption is **not solvent** without
-collateral/a counterparty — if the oracle says the asset x10'd, the pool won't have the
-BNB to cover it. So v1 keeps **trading on the solvent bonding curve** and uses the
-oracle as a **real on-chain reference/index** (seeds launch price, drives live tracking).
-A full synthetic peg with a collateral model is v2, and the contracts are structured to
-extend toward it.
+Token metadata is untrusted: all dynamic HTML values are escaped. RPC errors are rendered as text. Decimal inputs and transaction amounts use bigint, without floating-point conversions. The bundled ethers library avoids depending on a third-party script CDN at signing time.
 
-## Run it
+Quotes are valid in the UI for 30 seconds; creation reviews for two minutes. The deployed contract has no transaction deadline or first-buy minimum-output parameter. The UI rechecks quotes/settings before sending; ordinary trades enforce minimum output on-chain. A wallet can still alter or delay a transaction. No mainnet automatic trading is performed.
 
-### Contracts (Foundry)
+The market monitor loads the latest 200 tokens in pages and refreshes all current state every 15 seconds. The graph consists only of observations collected while the page is open. It is not historical OHLC data. Market-cap estimates exclude the burn-address balance after graduation and are shown in BNB, avoiding a hard-coded USD conversion.
 
-```bash
-cd contracts
-forge test -vv          # compile + run the suite (12 tests)
+## Oracle limits
+
+REAL / INDEX / LARP are feed categories, not verification of source accuracy. The deployment script seeded prices manually. At the handoff check, all eight feeds still carried their deployment timestamp. The UI now shows the timestamp and flags prices past the oracle's configured `maxStale` interval. A fresh timestamp alone does not prove a live market feed.
+
+The `oracle-service` directory is separate from this static Vercel site. Some INDEX/LARP feeds are simulated. It has not been started or given a signing key by this update. Automatic real-world price updates require a separately operated updater and suitable data sources; Vercel static hosting does not run its loop.
+
+## Build and validation
+
+```sh
+pnpm install --frozen-lockfile
+pnpm test
+pnpm build
+pnpm test:fork
+pnpm dev:qa
 ```
 
-Deploy to BSC Testnet (needs a funded testnet wallet — get tBNB from a faucet):
+The build copies only public frontend assets into `public/`. Vercel publishes that directory. `main` is connected to the existing Vercel project, so pushed changes trigger production deployment.
 
-```bash
-cp ../.env.example ../.env      # fill PRIVATE_KEY, BSC_TESTNET_RPC, BSCSCAN_API_KEY
-forge script script/Deploy.s.sol --rpc-url bsc_testnet --broadcast --verify
-```
+`test:fork` and `dev:qa` require Foundry's Anvil (`~/.foundry/bin/anvil`, or `ANVIL_BIN`). They fork BNB state with read-only public RPC calls and use randomly generated local accounts. **All transaction writes go to Anvil on a loopback port.** Anvil is needed because the fee-recipient account uses EIP-7702 delegation, unsupported by older local simulators.
 
-### Oracle service (Node)
+The browser QA URL is `http://127.0.0.1:4184/?qa=1`. The test server verifies Host/Origin and exposes its local RPC only on loopback. Neither that server nor its RPC endpoints are part of the production build. No `.env`, private keys or wallet secrets are needed for these checks.
 
-```bash
-cd oracle-service
-npm install
-npm run dry                     # fetch live prices, print them, send nothing
-# then, against a deployed oracle:
-#   RPC_URL, ORACLE_ADDRESS, UPDATER_PRIVATE_KEY in .env
-npm start                       # loop: fetch + push on-chain every 60s
-```
+Validation on 19 September 2026:
 
-`npm run dry` pulls real prices right now (CS2 skins via Steam Market, gold via
-Coinbase, plus index/larp feeds) — no wallet or deployment needed.
+- 7 unit checks: decimal precision, output minimums, fee/curve math, reserve bounds, feed freshness, HTML escaping and metadata validation.
+- Deployed AnyPair contract on a disposable fork at block **122828686**: creation, curve buy/sell, minimum-output rejection, exact approval, graduation, creator LP ownership and PancakeSwap purchase passed.
+- No real mainnet transactions were sent by these checks.
 
-## Security notes
+Original Solidity tests are in `contracts/test`; the pinned dependency revisions are in `contracts/foundry.lock`.
 
-- Contracts are **unaudited**. Deploy to testnet only. Get a professional audit before
-  touching mainnet or real funds.
-- The token has no owner, no mint/burn hooks, no hidden minting — nothing rug-shaped in
-  the token itself. Liquidity is burned at graduation.
-- The oracle updater key can move prices; in production, restrict updaters and consider
-  multiple sources / medianization per feed.
+## Project copy and terminal listing
+
+English project copy is in [docs/project-description.md](docs/project-description.md), and the site has an About dialog and metadata. No GMGN profile has been submitted or edited. A link to a token page does not prove indexing. The project's official meme-coin address has not been identified in this handoff.
+
+Sources: [EIP-6963](https://eips.ethereum.org/EIPS/eip-6963), [PancakeSwap V2](https://developer.pancakeswap.finance/contracts/v2/addresses), [DEX Screener listing](https://docs.dexscreener.com/token-listing).

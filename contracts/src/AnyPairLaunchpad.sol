@@ -24,7 +24,7 @@ import {IPancakeRouter02} from "./interfaces/IPancakeRouter02.sol";
 ///
 ///         When the curve raises `graduationThreshold` BNB, the pair "graduates":
 ///         the raised BNB + a reserved token slice are deposited as PancakeSwap
-///         liquidity and the LP tokens are burned, so liquidity is locked forever.
+///         liquidity. LP tokens go to the creator, who can withdraw liquidity.
 ///
 /// @dev NOT AUDITED. Deploy to BSC Testnet only until a professional audit is done.
 contract AnyPairLaunchpad is Ownable, ReentrancyGuard {

@@ -10,5 +10,4 @@ window.ANYPAIR_CONFIG = {
   // Deployed on BSC mainnet via script/DeployApp.s.sol :
   LAUNCHPAD: "0xd860536cff34829f4d3Fdb678E81bD1C8A81785E",
   ORACLE: "0xCd880c37Df6BA0889F5Cf2398D2F25B9b7bF6011",
-  BNB_USD: 615, // display-only
 };
