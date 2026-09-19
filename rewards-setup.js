@@ -1,10 +1,11 @@
+import {englishError} from './lib/language.mjs';
 import {USDT,TOKEN_ABI,verifyRewards} from './lib/rewards.mjs';
 const E=window.ethers,C={...window.ANYPAIR_CONFIG},$=s=>document.querySelector(s),wallets=[];
 const local=['localhost','127.0.0.1'].includes(location.hostname)&&new URLSearchParams(location.search).get('qa')==='1';
 let rpc,artifact,provider,injected,signer,owner,review,busy=false,ready=false;
 const key='anything:rewards-deployment:'+C.CHAIN_ID+':'+C.LAUNCHPAD.toLowerCase();
 function status(s){$('#setup-status').textContent=s;}
-function fail(e){status(e.code==='ACTION_REJECTED'||e.code===4001?'Request declined.':String(e.shortMessage||e.message||e).slice(0,500));}
+function fail(e){status(englishError(e));}
 function txLink(hash){const a=document.createElement('a');a.href=C.EXPLORER+'/tx/'+hash;a.textContent='View deployment transaction ↗';a.target='_blank';a.rel='noopener noreferrer';$('#setup-result').replaceChildren(a);}
 function invalidate(){review=null;$('#setup-deploy').hidden=true;$('#setup-review-text').hidden=true;}
 function add(detail){if(!detail?.provider||wallets.some(w=>w.provider===detail.provider))return;wallets.push(detail);const b=document.createElement('button');b.textContent='Connect '+String(detail.info?.name||'wallet').slice(0,80);b.onclick=()=>connect(detail.provider);$('#setup-wallets').append(b);}

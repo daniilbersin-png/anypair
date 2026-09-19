@@ -1,3 +1,4 @@
+import {englishDateTime} from './lib/language.mjs';
 import {isHiddenToken,visibleListings} from './lib/listings.mjs';
 import {assetFromKey} from './lib/assets.mjs';
 import {parseAmount} from './lib/market.mjs';
@@ -62,11 +63,11 @@ export function initRewards(ctx){
  }
  function render(){
   const c=ctx.get(),d=data,p=d.pool;$('#rw-content').hidden=false;$('#rw-title').textContent=d.name+' / '+d.symbol;
-  $('#rw-campaign').textContent=(d.active?'ACTIVE · ends '+new Date(Number(p.finish)*1000).toLocaleString():p.finish?'ENDED · deposits paused':'NOT FUNDED')+' · Total deposited: '+human(p.totalStaked)+' '+d.symbol+' · Lifetime funding: '+human(p.funded)+' USDT · Scheduled remaining: '+human(p.epochBudget-emitted(p,d.now))+' USDT';
+  $('#rw-campaign').textContent=(d.active?'ACTIVE · ends '+englishDateTime(new Date(Number(p.finish)*1000)):p.finish?'ENDED · deposits paused':'NOT FUNDED')+' · Total deposited: '+human(p.totalStaked)+' '+d.symbol+' · Lifetime funding: '+human(p.funded)+' USDT · Scheduled remaining: '+human(p.epochBudget-emitted(p,d.now))+' USDT';
   $('#rw-staked').textContent=human(d.staked)+' '+d.symbol;$('#rw-earned').textContent=fmt(d.earned);$('#rw-wallet').textContent='Wallet: '+human(d.balance)+' '+d.symbol;
   $('#rw-fund-note').textContent='Your balance: '+human(d.usdtBalance)+' USDT. '+(d.active?'A top-up increases the remaining budget and keeps the same end date.':'Start a new funded campaign. Existing deposits and unclaimed rewards are preserved.');
   $('#rw-fund').textContent=d.active?'APPROVE & TOP UP USDT':'APPROVE & FUND CAMPAIGN';$('#rw-refund').textContent='REFUND UNUSED EMISSIONS · '+human(d.refundable)+' USDT';
-  $('#rw-read-at').textContent='On-chain snapshot: block '+d.block+' · '+new Date(d.now*1000).toLocaleString()+'. Updates every 15 seconds while open.';
+  $('#rw-read-at').textContent='On-chain snapshot: block '+d.block+' · '+englishDateTime(new Date(d.now*1000))+'. Updates every 15 seconds while open.';
   $('#rw-coupons').textContent='Checking reference…';$('#rw-product').textContent=d.asset?.name||'No product reference';$('#rw-quote').textContent='';
   controls();void readQuote(d);
  }

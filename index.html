@@ -1,7 +1,8 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Anything — Create a token. With anything.</title>
 <meta name="description" content="A BNB Chain launchpad for asset-inspired tokens. Create a token, trade on its bonding curve, and graduate to PancakeSwap. Asset references do not guarantee token prices.">
@@ -239,7 +240,7 @@
         <div><label for="f-name">NAME</label><input id="f-name" placeholder="DogeCoal" maxlength="64"></div>
         <div><label for="f-ticker">TICKER</label><input id="f-ticker" placeholder="DCOAL" maxlength="10"></div>
       </div>
-      <fieldset class="profile-fields"><legend>TOKEN PROFILE · OPTIONAL</legend><div class="avatar-upload"><img id="f-avatar-preview" class="token-avatar" alt="Avatar preview" hidden><div><label for="f-avatar">AVATAR</label><input id="f-avatar" type="file" accept="image/png,image/jpeg,image/webp"><button id="f-avatar-remove" type="button" hidden>Remove avatar</button></div></div><p id="f-avatar-status" class="note" role="status"></p><label for="f-description">DESCRIPTION</label><textarea id="f-description" rows="3" maxlength="400" placeholder="What is your token about?"></textarea><label for="f-x">X PROFILE</label><input id="f-x" placeholder="@yourproject or https://x.com/yourproject" maxlength="100"><p class="note">Public and permanent after launch. The avatar is compressed to a small square. Profile storage is included in the estimated network fee. External terminals manage their own token profiles.</p></fieldset>
+      <fieldset class="profile-fields"><legend>TOKEN PROFILE · OPTIONAL</legend><div class="avatar-upload"><img id="f-avatar-preview" class="token-avatar" alt="Avatar preview" hidden><div><label for="f-avatar-choose">AVATAR</label><div class="avatar-picker"><button id="f-avatar-choose" type="button" aria-label="Choose image">Choose image</button><span id="f-avatar-name" class="note">No image selected</span></div><input id="f-avatar" type="file" accept="image/png,image/jpeg,image/webp" hidden><button id="f-avatar-remove" type="button" hidden>Remove avatar</button></div></div><p id="f-avatar-status" class="note" role="status"></p><label for="f-description">DESCRIPTION</label><textarea id="f-description" rows="3" maxlength="400" placeholder="What is your token about?"></textarea><label for="f-x">X PROFILE</label><input id="f-x" placeholder="@yourproject or https://x.com/yourproject" maxlength="100"><p class="note">Public and permanent after launch. The avatar is compressed to a small square. Profile storage is included in the estimated network fee. External terminals manage their own token profiles.</p></fieldset>
       <div><label for="f-feed">ASSET REFERENCE</label><select id="f-feed"></select></div>
       <div><label for="f-liquidity">LAUNCH MODE</label><select id="f-liquidity"><option value="curve">Start on the bonding curve</option><option value="pool">Create a PancakeSwap pool immediately</option></select></div><div><label for="f-buy">CREATOR FIRST BUY (BNB)</label><input id="f-buy" inputmode="decimal" placeholder="0.01"></div><p id="f-liquidity-note" class="note" role="status"></p>
       <p class="note" id="feed-detail"></p><p class="note">1 billion tokens: 800 million on the curve, 200 million reserved for PancakeSwap. Unsold curve tokens go to the burn address at graduation. The creator receives the LP tokens and can withdraw liquidity.</p>

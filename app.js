@@ -1,3 +1,4 @@
+import {englishError} from './lib/language.mjs';
 import {initProfile} from './profile.js';
 import {decodeProfile,encodeProfile} from './lib/profile.mjs';
 import {minimumPoolBuy,launchLiquidity} from './lib/liquidity.mjs';
@@ -28,10 +29,10 @@ const short=a=>a.slice(0,6)+'…'+a.slice(-4),decimal=n=>fmt(n),human=n=>Number(
 const nBNB=n=>(Number(n)/1e9).toLocaleString('en-US',{maximumSignificantDigits:7});
 const usd=n=>Number(n).toLocaleString('en-US',{style:'currency',currency:'USD',maximumSignificantDigits:7});
 function status(message,hash){const box=$('#st-msg');box.replaceChildren(document.createTextNode(message));if(hash&&/^0x[\da-f]{64}$/i.test(hash)){const a=document.createElement('a');a.textContent=' VIEW TX ↗';a.href=C.EXPLORER+'/tx/'+hash;a.target='_blank';a.rel='noopener noreferrer';box.append(a)}}
-function errorText(e){if(e.code==='ACTION_REJECTED'||e.code===4001)return 'Request declined in wallet.';if(e.code===-32002)return 'A wallet request is already open. Complete it in your wallet.';if(e.code==='INSUFFICIENT_FUNDS')return 'Insufficient BNB for the amount and network fee.';return String(e.reason||e.shortMessage||e.message||e).slice(0,350)}
+const errorText=englishError;
 function invalidateQuote(){quote=null;quoteVersion++;$('#i-min').textContent='—';updateExecLabel()}
 function invalidateLaunch(){launchReview=null;$('#launch-review').hidden=true;$('#f-confirm').hidden=true;$('#f-status').textContent=''}
-function setBusy(value){busy=value;for(const id of ['#netbtn','#f-deploy','#f-confirm','#f-name','#f-ticker','#f-feed','#f-buy','#f-liquidity','#f-avatar','#f-avatar-remove','#f-description','#f-x','#amt','#slippage','#tab-buy','#tab-sell','#f-rewards','#f-reward-budget','#f-reward-days'])$(id).disabled=value;$('#quick').querySelectorAll('button').forEach(b=>b.disabled=value);updateExecLabel();if(!value)rewards?.ready()}
+function setBusy(value){busy=value;for(const id of ['#netbtn','#f-deploy','#f-confirm','#f-name','#f-ticker','#f-feed','#f-buy','#f-liquidity','#f-avatar','#f-avatar-choose','#f-avatar-remove','#f-description','#f-x','#amt','#slippage','#tab-buy','#tab-sell','#f-rewards','#f-reward-budget','#f-reward-days'])$(id).disabled=value;$('#quick').querySelectorAll('button').forEach(b=>b.disabled=value);updateExecLabel();if(!value)rewards?.ready()}
 function remember(tx,kind,token){const owner=E.getAddress(tx.from);pendingHash=tx.hash;try{localStorage.setItem('anypair:pending:'+C.LAUNCHPAD.toLowerCase()+':'+owner.toLowerCase(),JSON.stringify({hash:tx.hash,nonce:tx.nonce,kind,token,from:owner,at:Date.now()}))}catch{}status('Transaction sent. Waiting for confirmation.',tx.hash)}
 function forget(owner=me){pendingHash='';try{localStorage.removeItem('anypair:pending:'+C.LAUNCHPAD.toLowerCase()+':'+owner.toLowerCase())}catch{}}
 async function waitMined(tx,kind,token){remember(tx,kind,token);const owner=E.getAddress(tx.from);let receipt;try{receipt=await tx.wait(1,120000)}catch(e){if(e.code==='TRANSACTION_REPLACED'){forget(owner);if(e.cancelled)throw Error('Transaction cancelled or replaced in your wallet.');receipt=e.receipt;status('Replacement transaction confirmed.',e.replacement.hash)}else throw e}if(!receipt)throw Error('Confirmation is still pending. Use the transaction link; do not submit again.');forget(owner);if(receipt.status!==1)throw Error('Transaction failed on-chain. Network fees may have been charged.');return receipt}
