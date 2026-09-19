@@ -8,7 +8,7 @@ Anything is a BNB Chain launchpad for asset-inspired tokens. Stocks, gold, burge
 
 Create a token. With anything.
 
-Anything brings token creation and trading into one terminal on BNB Chain. Explore 76 references across stocks, crypto, commodity futures, food, indices, game items, collectibles and unusual ideas — or name your own. See available prices with their source and date, then create your token from the same screen.
+Anything brings token creation and trading into one terminal on BNB Chain. Explore 276 references across stocks, crypto, commodity futures, food, indices, game items, collectibles and unusual ideas — or name your own. Discover more than 200 fictional meme references, from a housefly IPO to cloud rental, with themed browsing and a Surprise me button. See available prices with their source and date, then create your token from the same screen.
 
 Your launches appear in My tokens. Trade on the bonding curve until the BNB funding threshold is reached, then continue in the token’s PancakeSwap liquidity pool.
 

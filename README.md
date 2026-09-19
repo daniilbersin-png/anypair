@@ -28,7 +28,9 @@ The market monitor loads the latest 200 tokens in pages and refreshes all curren
 
 ## Asset catalogue
 
-The Anything frontend offers 76 references in nine filter categories, with search, custom references, per-item launch buttons and a compact expandable My tokens panel. My tokens shows creations by the connected wallet among the latest 200 scanned launches, not wallet holdings. Browse all explicitly opens the public market list.
+The Anything frontend offers 276 references with category filters, with search, custom references, per-item launch buttons and a compact expandable My tokens panel. My tokens shows creations by the connected wallet among the latest 200 scanned launches, not wallet holdings. Browse all explicitly opens the public market list.
+
+The Memes category contains 202 fictional references (200 new ideas plus two existing concepts) across ten themes. Theme filters and Surprise me make the larger catalogue easier to browse. Meme cards, launch reviews and selected-token details explicitly identify fiction; neither the browser nor the quote API fabricates an underlying price. The token itself still trades through the existing bonding curve.
 
 `lib/assets.mjs` is the shared allowlist. New references are stored as `anything:<asset-id>` in the existing contract’s `assetKey`, so they remain identifiable on other devices. Custom names use `Custom: <name>`. Quotes are display-only; they do not change the deployed bonding curve. Existing direct oracle feeds retain their feed IDs where units match. Coal is explicitly per kilogram, using the manual per-tonne index divided by 1,000.
 
@@ -62,7 +64,7 @@ The browser QA URL is `http://127.0.0.1:4184/?qa=1`. The test server verifies Ho
 
 Validation on 19 September 2026:
 
-- 12 unit checks, including reference persistence, creator filtering, CSV parsing, quote units and API input validation; plus: decimal precision, output minimums, fee/curve math, reserve bounds, feed freshness, HTML escaping and metadata validation.
+- 14 unit checks, including reference persistence, creator filtering, CSV parsing, quote units and API input validation; plus: decimal precision, output minimums, fee/curve math, reserve bounds, feed freshness, HTML escaping and metadata validation.
 - Deployed AnyPair contract on a disposable fork at block **122828686**: creation, curve buy/sell, minimum-output rejection, exact approval, graduation, creator LP ownership and PancakeSwap purchase passed.
 - No real mainnet transactions were sent by these checks.
 
