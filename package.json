@@ -7,7 +7,11 @@
     "build": "node scripts/build.mjs",
     "test": "node --test tests/*.test.mjs",
     "test:fork": "node scripts/test-fork.mjs",
-    "dev:qa": "node scripts/qa.mjs"
+    "dev:qa": "node scripts/qa.mjs",
+    "test:rewards": "node scripts/test-rewards.mjs",
+    "test:rewards-fork": "node scripts/test-rewards.mjs --fork",
+    "build:rewards": "forge build --root contracts && node scripts/build-rewards.mjs",
+    "dev:rewards": "node scripts/qa.mjs --rewards"
   },
   "devDependencies": {
     "ethers": "6.15.0"
