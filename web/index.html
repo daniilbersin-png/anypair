@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ANYPAIR TERMINAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap">
+<style>
+  :root{
+    --bg:#000000; --panel:#050403;
+    --amber:#ff9e1b; --amber-b:#ffb64a; --amber-dim:#a85f00;
+    --orange:#ff6a00; --red:#ff433d; --green:#28e07b; --blue:#3aa0ff; --cyan:#33d6ff;
+    --white:#f2ede2; --grid:#241608; --border:#4a2f08;
+    --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--amber);font-family:var(--mono);font-size:12.5px;line-height:1.35;
+    -webkit-font-smoothing:antialiased;overflow:hidden;text-shadow:0 0 1px rgba(255,158,27,.25)}
+  body::before{content:"";position:fixed;inset:0;z-index:999;pointer-events:none;
+    background:repeating-linear-gradient(to bottom,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.16) 3px);mix-blend-mode:multiply}
+  body::after{content:"";position:fixed;inset:0;z-index:998;pointer-events:none;
+    background:radial-gradient(120% 120% at 50% 50%,transparent 60%,rgba(0,0,0,.55) 100%)}
+  .tabnum{font-variant-numeric:tabular-nums}
+  .grn{color:var(--green)} .red{color:var(--red)} .wht{color:var(--white)}
+  .blu{color:var(--blue)} .cyn{color:var(--cyan)} .org{color:var(--orange)} .dim{color:var(--amber-dim)}
+  .app{display:flex;flex-direction:column;height:100%;padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+  .cmd{display:flex;align-items:center;gap:0;background:#0a0704;border-bottom:1px solid var(--border);height:26px;flex:none}
+  .cmd .brand{background:var(--orange);color:#000;font-weight:700;padding:0 10px;height:100%;display:flex;align-items:center;letter-spacing:1px}
+  .cmd .line{flex:1;display:flex;align-items:center;padding:0 10px;color:var(--amber-b);gap:6px;overflow:hidden;white-space:nowrap}
+  .cmd .go{background:var(--amber);color:#000;font-weight:700;padding:1px 6px;margin-left:6px}
+  .cmd .caret{width:8px;height:14px;background:var(--amber);animation:blink 1s steps(1) infinite;display:inline-block}
+  @keyframes blink{50%{opacity:0}}
+  .cmd .clock{padding:0 10px;color:var(--white);border-left:1px solid var(--border);height:100%;display:flex;align-items:center}
+  .cmd .net{padding:0 10px;border-left:1px solid var(--border);height:100%;display:flex;align-items:center;gap:6px;cursor:pointer;color:var(--amber-b);font-weight:600}
+  .cmd .net:hover{background:#160d02}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red)}
+  .dot.on{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .fkeys{display:flex;height:22px;flex:none;font-weight:600;font-size:11.5px}
+  .fkeys .fk{display:flex;align-items:center;padding:0 12px;cursor:pointer;color:#000;letter-spacing:.4px}
+  .fk.k1{background:var(--orange)} .fk.k2{background:var(--amber)} .fk.k3{background:var(--blue)}
+  .fk.k4{background:var(--green)} .fk.k5{background:var(--red)} .fk.spacer{flex:1;background:#0a0704;cursor:default}
+  .fk:hover{filter:brightness(1.15)}
+  .fk .n{background:rgba(0,0,0,.35);color:#fff;padding:0 5px;margin-right:6px;border-radius:1px}
+  .main{flex:1;display:grid;grid-template-columns:1.15fr 1fr;gap:0;min-height:0}
+  .col{display:flex;flex-direction:column;min-height:0;min-width:0}
+  .col.left{border-right:1px solid var(--border)}
+  .pane{display:flex;flex-direction:column;min-height:0;border-bottom:1px solid var(--border)}
+  .pane-h{display:flex;align-items:center;justify-content:space-between;background:#0a0704;border-bottom:1px solid var(--border);padding:2px 8px;color:var(--amber-b);font-weight:600;flex:none}
+  .pane-h .code{background:var(--amber);color:#000;padding:0 5px;margin-right:8px;font-weight:700}
+  .pane-h .r{color:var(--dim);font-weight:500}
+  .tbl-wrap{overflow:auto;flex:1}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  thead th{position:sticky;top:0;background:#0a0704;color:var(--blue);text-align:right;padding:3px 8px;font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.3px}
+  thead th.l{text-align:left}
+  tbody td{padding:3px 8px;text-align:right;border-bottom:1px solid #140c03}
+  tbody td.l{text-align:left}
+  tbody tr{cursor:pointer}
+  tbody tr:hover{background:#160d02}
+  tbody tr.sel{background:#241403;outline:1px solid var(--amber-dim)}
+  .tk{color:var(--amber-b);font-weight:700}
+  .badge{font-size:10px;padding:0 4px;border:1px solid;border-radius:1px}
+  .b-real{color:var(--green);border-color:#0f5c32}
+  .b-index{color:var(--cyan);border-color:#0d5566}
+  .b-larp{color:var(--red);border-color:#6b1b18}
+  .b-grad{color:#000;background:var(--amber);border-color:var(--amber)}
+  .des{padding:8px 10px;overflow:auto}
+  .des h2{margin:0 0 2px;font-size:15px;color:var(--amber-b);font-weight:700;letter-spacing:.5px}
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;font-size:12px}
+  .kv .k{color:var(--blue)} .kv .v{color:var(--white);text-align:left}
+  .pairrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+  .pairrow .chip{border:1px solid var(--amber-dim);padding:2px 8px;color:var(--amber-b)}
+  .pairrow .x{color:var(--orange);font-weight:700}
+  .chart-pane{flex:1;min-height:0}
+  #gp{width:100%;height:100%;display:block}
+  .chart-body{position:relative;flex:1;min-height:0}
+  .legend{position:absolute;top:6px;left:10px;font-size:11px;display:flex;gap:14px;z-index:2}
+  .legend i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px}
+  .trade{padding:8px 10px;display:flex;flex-direction:column;gap:7px}
+  .bs{display:flex;gap:0;border:1px solid var(--border)}
+  .bs div{flex:1;text-align:center;padding:4px;cursor:pointer;font-weight:700;color:var(--dim)}
+  .bs .buy.on{background:rgba(40,224,123,.15);color:var(--green)}
+  .bs .sell.on{background:rgba(255,67,61,.15);color:var(--red)}
+  .inp{display:flex;align-items:center;border:1px solid var(--border);background:#0a0704}
+  .inp label{padding:0 8px;color:var(--blue);font-size:11px;white-space:nowrap}
+  .inp input{flex:1;background:transparent;border:none;outline:none;color:var(--white);font-family:var(--mono);font-size:14px;font-weight:600;padding:6px 8px;text-align:right}
+  .inp .u{padding:0 8px;color:var(--amber-b);font-weight:700}
+  .quick{display:flex;gap:5px}
+  .quick span{flex:1;text-align:center;border:1px solid var(--border);padding:3px;cursor:pointer;color:var(--dim);font-size:11px}
+  .quick span:hover{color:var(--amber-b);border-color:var(--amber-dim)}
+  .info{font-size:11.5px;display:flex;flex-direction:column;gap:2px}
+  .info .row{display:flex;justify-content:space-between}
+  .info .row b{color:var(--white);font-weight:600}
+  .exec{border:1px solid;padding:7px;text-align:center;font-weight:700;cursor:pointer;letter-spacing:.5px;background:#0a0704}
+  .exec.buy{color:var(--green);border-color:#0f5c32}
+  .exec.buy:hover{background:rgba(40,224,123,.12)}
+  .exec.sell{color:var(--red);border-color:#6b1b18}
+  .exec.sell:hover{background:rgba(255,67,61,.12)}
+  .exec:disabled{opacity:.4;cursor:not-allowed}
+  .gradbar{height:10px;border:1px solid var(--border);background:#0a0704;position:relative}
+  .gradbar i{display:block;height:100%;background:linear-gradient(90deg,var(--orange),var(--amber))}
+  .gradbar span{position:absolute;inset:0;text-align:center;font-size:9px;color:#000;font-weight:700;line-height:8px}
+  .ticker{height:22px;background:#0a0704;border-top:1px solid var(--border);overflow:hidden;flex:none;display:flex;align-items:center}
+  .ticker .track{display:inline-flex;white-space:nowrap;animation:scroll 40s linear infinite;will-change:transform}
+  .ticker .it{padding:0 18px;color:var(--white)}
+  .ticker .it b{color:var(--amber-b)}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .status{height:20px;background:var(--orange);color:#000;display:flex;align-items:center;padding:0 10px;font-weight:600;flex:none;gap:14px;font-size:11px}
+  .status .sp{margin-left:auto}
+  .ovl{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:60px 16px}
+  .ovl.on{display:flex}
+  .modal{width:100%;max-width:460px;background:var(--panel);border:1px solid var(--amber-dim);box-shadow:0 0 30px rgba(255,158,27,.15)}
+  .modal .mh{background:var(--orange);color:#000;font-weight:700;padding:4px 10px;display:flex;justify-content:space-between}
+  .modal .mh span{cursor:pointer}
+  .modal .mb{padding:12px;display:flex;flex-direction:column;gap:9px}
+  .modal label{color:var(--blue);font-size:11px;display:block;margin-bottom:3px}
+  .modal input,.modal select{width:100%;background:#0a0704;border:1px solid var(--border);color:var(--white);font-family:var(--mono);font-size:13px;padding:6px 8px;outline:none}
+  .modal input:focus,.modal select:focus{border-color:var(--amber)}
+  .m2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  #boot{position:fixed;inset:0;background:#000;z-index:1001;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;color:var(--amber);text-align:center;padding:20px}
+  #boot .big{font-size:22px;font-weight:700;letter-spacing:3px}
+  #boot .sm{color:var(--dim);max-width:60ch}
+  @media(max-width:820px){
+    .main{grid-template-columns:1fr;grid-auto-rows:minmax(0,1fr)}
+    .col.left{border-right:none;border-bottom:1px solid var(--border)}
+    body{font-size:12px}
+    .cmd .line .dim{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="boot"><div class="big">ANYPAIR&nbsp;TERMINAL</div><div class="sm" id="bootmsg">CONNECTING TO BNB CHAIN…</div></div>
+
+<div class="app">
+  <div class="cmd">
+    <div class="brand">ANYPAIR&lt;GO&gt;</div>
+    <div class="line"><span class="dim">CMD</span> <span id="cmdtext">ANYP</span><span class="caret"></span>
+      <span class="go">&lt;GO&gt;</span>
+      <span class="dim" style="margin-left:14px">PAIR ANY ASSET · BNB CHAIN</span>
+    </div>
+    <div class="net" id="netbtn"><span class="dot" id="netdot"></span><span id="netlbl">CONNECT WALLET</span></div>
+    <div class="clock tabnum" id="clock">--:--:--</div>
+  </div>
+
+  <div class="fkeys">
+    <div class="fk k1" id="fk-launch"><span class="n">1</span>LAUNCH</div>
+    <div class="fk k2"><span class="n">2</span>MKTS</div>
+    <div class="fk k3"><span class="n">3</span>GP CHART</div>
+    <div class="fk k4"><span class="n">4</span>TRADE</div>
+    <div class="fk k5" id="fk-refresh"><span class="n">5</span>REFRESH</div>
+    <div class="fk spacer"></div>
+  </div>
+
+  <div class="main">
+    <div class="col left">
+      <div class="pane" style="flex:1;border-bottom:none">
+        <div class="pane-h"><span><span class="code">MKTS</span>ANYPAIR SECURITIES MONITOR</span><span class="r" id="pcount">0 SEC</span></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr>
+              <th class="l">TICKER</th><th>LAST(nBNB)</th><th>CHG%</th>
+              <th>RSV(BNB)</th><th>%GRAD</th><th class="l">PAIRED / ORACLE</th>
+            </tr></thead>
+            <tbody id="sectbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="pane" style="flex:none">
+        <div class="pane-h"><span><span class="code">DES</span><span id="des-tk">—</span> SECURITY DESCRIPTION</span><span class="r" id="des-tier">—</span></div>
+        <div class="des">
+          <h2 id="des-name">SELECT A SECURITY</h2>
+          <div class="pairrow">
+            <span class="chip" id="des-self">$—</span><span class="x">✕</span><span class="chip" id="des-asset">—</span>
+          </div>
+          <div class="kv">
+            <div class="k">LAST</div><div class="v tabnum" id="des-last">—</div>
+            <div class="k">MKT CAP</div><div class="v tabnum" id="des-mcap">—</div>
+            <div class="k">CURVE RSV</div><div class="v tabnum" id="des-rsv">—</div>
+            <div class="k">ORACLE PX</div><div class="v tabnum" id="des-oracle">—</div>
+            <div class="k">TOKEN</div><div class="v" id="des-addr">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pane chart-pane">
+        <div class="pane-h"><span><span class="code">GP</span>PRICE GRAPH · LIVE</span><span class="r">TOKEN vs ORACLE</span></div>
+        <div class="chart-body">
+          <div class="legend"><span><i style="background:var(--amber)"></i>TOKEN</span><span><i style="background:var(--blue)"></i>ORACLE ASSET</span></div>
+          <canvas id="gp"></canvas>
+        </div>
+      </div>
+
+      <div class="pane" style="flex:none;border-bottom:none">
+        <div class="pane-h"><span><span class="code">BUY</span>ORDER ENTRY</span><span class="r" id="bal">NOT CONNECTED</span></div>
+        <div class="trade">
+          <div class="bs"><div class="buy on" id="tab-buy">BUY</div><div class="sell" id="tab-sell">SELL</div></div>
+          <div class="inp"><label id="amtlbl">AMOUNT</label><input id="amt" inputmode="decimal" value="0.01"><span class="u" id="amtu">BNB</span></div>
+          <div class="quick" id="quick"></div>
+          <div class="info">
+            <div class="row"><span>EST. RECEIVE</span><b id="i-get">—</b></div>
+            <div class="row"><span>PRICE IMPACT</span><b id="i-impact">—</b></div>
+            <div class="row"><span>FEE (1%)</span><b id="i-fee">—</b></div>
+          </div>
+          <button class="exec buy" id="exec">CONNECT WALLET TO TRADE</button>
+          <div class="gradbar"><i id="gradfill" style="width:0%"></i><span id="gradtxt">0% TO PANCAKESWAP</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker"><div class="track" id="ticker"></div></div>
+  <div class="status"><span id="st-msg">READY</span><span class="sp" id="st-addr">WALLET: —</span><span id="st-chain">BNB · CHAIN 56</span></div>
+</div>
+
+<div class="ovl" id="ovl">
+  <div class="modal">
+    <div class="mh">LAUNCH NEW SECURITY <span id="mclose">[X]</span></div>
+    <div class="mb">
+      <div class="m2">
+        <div><label>NAME</label><input id="f-name" placeholder="DogeCoal" maxlength="20"></div>
+        <div><label>TICKER</label><input id="f-ticker" placeholder="DCOAL" maxlength="8"></div>
+      </div>
+      <div><label>PAIRED ASSET / ORACLE FEED</label><select id="f-feed"></select></div>
+      <div><label>FIRST BUY (BNB, optional)</label><input id="f-buy" inputmode="decimal" placeholder="0.01"></div>
+      <button class="exec buy" id="f-deploy">DEPLOY PAIR ON BNB</button>
+      <div class="dim" id="f-status" style="font-size:11px"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+const C = window.ANYPAIR_CONFIG;
+const $ = s => document.querySelector(s);
+const PAD_ABI = [
+  "function pairsCount() view returns (uint256)",
+  "function getPairs(uint256 offset,uint256 limit) view returns (tuple(address token,bytes32 feedId,string assetKey,uint256 realBnb,uint256 tokenReserve,uint256 basePriceAtLaunch,address creator,uint64 createdAt,bool graduated)[])",
+  "function currentPrice(address) view returns (uint256)",
+  "function graduationProgress(address) view returns (uint256)",
+  "function assetPrice(address) view returns (uint256 price,uint64 updatedAt,uint8 tier)",
+  "function quoteBuy(address,uint256) view returns (uint256)",
+  "function quoteSell(address,uint256) view returns (uint256)",
+  "function buy(address,uint256) payable returns (uint256)",
+  "function sell(address,uint256,uint256) returns (uint256)",
+  "function createPair(string,string,string,bytes32,uint256) payable returns (address)"
+];
+const ORACLE_ABI = [
+  "function feedCount() view returns (uint256)",
+  "function feedIds(uint256) view returns (bytes32)",
+  "function feeds(bytes32) view returns (uint256 price,uint64 updatedAt,uint8 tier,bool exists,string description)"
+];
+const ERC20_ABI = [
+  "function symbol() view returns (string)","function name() view returns (string)",
+  "function balanceOf(address) view returns (uint256)","function approve(address,uint256) returns (bool)",
+  "function allowance(address,address) view returns (uint256)"
+];
+const TIER=["REAL","INDEX","LARP"], TIERCLS=["b-real","b-index","b-larp"];
+const fmt=ethers.formatEther, pe=ethers.parseEther;
+
+let readProvider, padRead, oracleRead;      // read-only (public RPC)
+let browserProvider, signer, padWrite, me;  // wallet (writes)
+let secs=[], selected=null, side="buy", hist={}, baseline={}, feedList=[];
+
+function nBNB(wei){ const v=Number(wei)/1e9; return v>=100?v.toFixed(1):v>=1?v.toFixed(3):v.toFixed(5); }
+function short(a){ return a.slice(0,6)+"…"+a.slice(-4); }
+function usd(n){ return "$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:n<1?4:2}); }
+function status(m){ $("#st-msg").textContent=m; }
+
+async function boot(){
+  if(!C.LAUNCHPAD || /^0x0+$/.test(C.LAUNCHPAD)){
+    $("#bootmsg").innerHTML="NOT CONFIGURED<br><span class='dim'>Fill LAUNCHPAD / ORACLE in config.js after deploy.</span>";
+    return;
+  }
+  try{
+    readProvider = new ethers.JsonRpcProvider(C.RPC_URL);
+    padRead = new ethers.Contract(C.LAUNCHPAD, PAD_ABI, readProvider);
+    oracleRead = new ethers.Contract(C.ORACLE, ORACLE_ABI, readProvider);
+    await loadFeeds();
+    await loadSecurities();
+    if(secs.length) select(secs[0].token, true);
+    $("#boot").style.display="none";
+    status("LIVE · "+secs.length+" SECURITIES · CONNECT WALLET TO TRADE");
+    setInterval(poll,6000);
+    setInterval(()=>{ $("#clock").textContent=new Date().toTimeString().slice(0,8); },1000);
+    // auto-reconnect if wallet already authorized
+    if(window.ethereum){
+      const accs = await window.ethereum.request({method:"eth_accounts"}).catch(()=>[]);
+      if(accs && accs.length) connect();
+    }
+  }catch(e){ $("#bootmsg").innerHTML="CONNECTION FAILED<br><span style='color:#ff433d'>"+e.message+"</span>"; }
+}
+
+/* ---------- wallet ---------- */
+$("#netbtn").onclick=connect;
+async function connect(){
+  if(!window.ethereum){ status("NO WALLET — install MetaMask"); alert("MetaMask не найден. Установи расширение MetaMask и обнови страницу."); return; }
+  try{
+    await window.ethereum.request({method:"eth_requestAccounts"});
+    await ensureChain();
+    browserProvider = new ethers.BrowserProvider(window.ethereum);
+    signer = await browserProvider.getSigner();
+    me = await signer.getAddress();
+    padWrite = new ethers.Contract(C.LAUNCHPAD, PAD_ABI, signer);
+    $("#netdot").classList.add("on");
+    $("#netlbl").textContent = short(me);
+    $("#st-addr").textContent = "WALLET: "+short(me);
+    await updateBal();
+    updateExecLabel();
+    status("WALLET CONNECTED · "+short(me));
+    window.ethereum.on&&window.ethereum.on("accountsChanged",()=>location.reload());
+    window.ethereum.on&&window.ethereum.on("chainChanged",()=>location.reload());
+  }catch(e){ status("CONNECT FAILED · "+(e.shortMessage||e.message)); }
+}
+async function ensureChain(){
+  const cid = await window.ethereum.request({method:"eth_chainId"});
+  if(cid===C.CHAIN_HEX) return;
+  try{ await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:C.CHAIN_HEX}]}); }
+  catch(e){
+    if(e.code===4902){ await window.ethereum.request({method:"wallet_addEthereumChain",params:[{
+      chainId:C.CHAIN_HEX, chainName:C.CHAIN_NAME, nativeCurrency:{name:"BNB",symbol:"BNB",decimals:18},
+      rpcUrls:[C.RPC_URL], blockExplorerUrls:[C.EXPLORER] }]}); }
+    else throw e;
+  }
+}
+async function updateBal(){
+  if(!me) return;
+  try{ const b=await readProvider.getBalance(me); $("#bal").textContent="BAL "+(+fmt(b)).toFixed(4)+" BNB"; }catch(e){}
+}
+function isConnected(){ return !!me; }
+
+/* ---------- feeds / securities ---------- */
+async function loadFeeds(){
+  const n=Number(await oracleRead.feedCount()); feedList=[];
+  for(let i=0;i<n;i++){ const id=await oracleRead.feedIds(i); const f=await oracleRead.feeds(id); feedList.push({id,tier:Number(f[2]),desc:f[4]}); }
+  $("#f-feed").innerHTML=feedList.map(f=>`<option value="${f.id}">[${TIER[f.tier]}] ${f.desc}</option>`).join("");
+}
+async function loadSecurities(){
+  const n=Number(await padRead.pairsCount());
+  const raw = n>0 ? await padRead.getPairs(0,n) : [];
+  const out=[];
+  for(const p of raw){
+    const t=p.token; let sym="?",name="?";
+    try{ const e=new ethers.Contract(t,ERC20_ABI,readProvider); sym=await e.symbol(); name=await e.name(); }catch(e){}
+    const [price,grad,ap]=await Promise.all([padRead.currentPrice(t),padRead.graduationProgress(t),padRead.assetPrice(t).catch(()=>[0n,0n,2])]);
+    const s={token:t,sym,name,asset:p.assetKey,feedId:p.feedId,realBnb:p.realBnb,tokenReserve:p.tokenReserve,graduated:p.graduated,price,grad:Number(grad),assetPx:ap[0],tier:Number(ap[2])};
+    out.push(s);
+    if(baseline[t]===undefined) baseline[t]=Number(price)||1;
+    if(!hist[t]) hist[t]=seedHistory(s);
+  }
+  secs=out; renderTable(); renderTicker();
+}
+function seedHistory(s){ const a=[]; let p=Number(s.price)||1; const av=Number(s.assetPx)||1;
+  for(let i=0;i<36;i++){ p=p*(1+(Math.random()-0.48)*0.05); a.push({price:p,asset:av*(1+(Math.random()-0.5)*0.02)}); }
+  a.push({price:Number(s.price)||p,asset:Number(s.assetPx)||av}); return a; }
+
+function renderTable(){
+  $("#pcount").textContent=secs.length+" SEC";
+  if(!secs.length){ $("#sectbody").innerHTML=`<tr><td class="l dim" colspan="6">NO SECURITIES YET — PRESS 1) LAUNCH</td></tr>`; return; }
+  $("#sectbody").innerHTML=secs.map(s=>{
+    const chg=baseline[s.token]?(Number(s.price)-baseline[s.token])/baseline[s.token]*100:0;
+    const badge=s.graduated?`<span class="badge b-grad">LISTED</span>`:`<span class="badge ${TIERCLS[s.tier]}">${TIER[s.tier]}</span>`;
+    return `<tr data-t="${s.token}" class="${s.token===selected?'sel':''}">
+      <td class="l"><span class="tk">${s.sym}</span></td>
+      <td class="tabnum wht">${s.graduated?'—':nBNB(s.price)}</td>
+      <td class="tabnum ${chg>=0?'grn':'red'}">${chg>=0?'+':''}${chg.toFixed(1)}</td>
+      <td class="tabnum">${(+fmt(s.realBnb)).toFixed(3)}</td>
+      <td class="tabnum ${s.grad>=10000?'org':''}">${(s.grad/100).toFixed(0)}</td>
+      <td class="l"><span class="dim">${s.asset}</span> ${badge}</td></tr>`;
+  }).join("");
+  $("#sectbody").querySelectorAll("tr").forEach(tr=>{ if(tr.dataset.t) tr.onclick=()=>select(tr.dataset.t); });
+}
+function renderTicker(){
+  if(!secs.length){ $("#ticker").innerHTML=""; return; }
+  const items=secs.map(s=>{ const chg=baseline[s.token]?(Number(s.price)-baseline[s.token])/baseline[s.token]*100:0;
+    const c=chg>=0?"var(--green)":"var(--red)";
+    return `<span class="it"><b>${s.sym}</b> ${s.graduated?'LISTED':nBNB(s.price)+'n'} <span style="color:${c}">${chg>=0?'▲':'▼'}${Math.abs(chg).toFixed(1)}%</span></span>`;}).join("");
+  $("#ticker").innerHTML=`<div style="display:inline-flex">${items}</div><div style="display:inline-flex">${items}</div>`;
+}
+
+function select(t){
+  selected=t; const s=secs.find(x=>x.token===t); if(!s) return;
+  $("#des-tk").textContent=s.sym; $("#des-name").textContent=s.name.toUpperCase();
+  $("#des-self").textContent="$"+s.sym; $("#des-asset").textContent=s.asset;
+  $("#des-tier").innerHTML=s.graduated?`<span class="org">GRADUATED → PANCAKESWAP</span>`:`<span class="badge ${TIERCLS[s.tier]}">${TIER[s.tier]} ORACLE</span>`;
+  $("#des-last").innerHTML=s.graduated?'<span class="org">LISTED ON DEX</span>':(nBNB(s.price)+" nBNB  ("+usd(Number(fmt(s.price))*C.BNB_USD)+")");
+  const mcap=Number(fmt(s.price))*1e9;
+  $("#des-mcap").textContent=mcap.toFixed(2)+" BNB  ("+usd(mcap*C.BNB_USD)+")";
+  $("#des-rsv").textContent=(+fmt(s.realBnb)).toFixed(4)+" BNB";
+  $("#des-oracle").innerHTML=s.assetPx>0n?usd(Number(fmt(s.assetPx)))+`  <span class="dim">[${TIER[s.tier]}]</span>`:'<span class="dim">n/a</span>';
+  $("#des-addr").innerHTML=`<a href="${C.EXPLORER}/token/${s.token}" target="_blank" class="dim">${s.token}</a>`;
+  $("#gradfill").style.width=(s.grad/100)+"%";
+  $("#gradtxt").textContent=s.graduated?"LISTED ✓":(s.grad/100).toFixed(0)+"% TO PANCAKESWAP";
+  renderTable(); drawChart(); recalc(); updateExecLabel();
+}
+function updateExecLabel(){
+  const s=secs.find(x=>x.token===selected); const btn=$("#exec");
+  if(!isConnected()){ btn.disabled=false; btn.className="exec buy"; btn.textContent="CONNECT WALLET TO TRADE"; return; }
+  if(s&&s.graduated){ btn.disabled=true; btn.textContent="TRADES ON PANCAKESWAP"; return; }
+  btn.disabled=false; btn.className="exec "+side; btn.textContent=(side==="buy"?"EXECUTE BUY":"EXECUTE SELL");
+}
+
+function drawChart(){
+  const cv=$("#gp"); const s=secs.find(x=>x.token===selected); if(!s) return;
+  const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight; if(!w||!h) return;
+  cv.width=w*dpr; cv.height=h*dpr; const c=cv.getContext("2d"); c.scale(dpr,dpr); c.clearRect(0,0,w,h);
+  const data=hist[s.token]||[]; if(data.length<2) return;
+  const P={l:6,r:52,t:16,b:14}; const tv=data.map(d=>d.price),av=data.map(d=>d.asset);
+  const tmin=Math.min(...tv),tmax=Math.max(...tv),tr=(tmax-tmin)||1, amin=Math.min(...av),amax=Math.max(...av),ar=(amax-amin)||1;
+  const X=i=>P.l+(i/(data.length-1))*(w-P.l-P.r), Yt=v=>P.t+(1-(v-tmin)/tr)*(h-P.t-P.b), Ya=v=>P.t+(1-(v-amin)/ar)*(h-P.t-P.b);
+  c.strokeStyle="#241608"; c.lineWidth=1;
+  for(let g=0;g<=4;g++){ const y=P.t+g/4*(h-P.t-P.b); c.beginPath(); c.moveTo(P.l,y); c.lineTo(w-P.r,y); c.stroke();
+    c.fillStyle="#a85f00"; c.font="9px IBM Plex Mono"; c.textAlign="left"; c.fillText(nBNB(tmax-(g/4)*tr), w-P.r+4, y+3); }
+  c.strokeStyle="#3aa0ff"; c.lineWidth=1.2; c.setLineDash([4,3]); c.beginPath();
+  av.forEach((v,i)=>i?c.lineTo(X(i),Ya(v)):c.moveTo(X(i),Ya(v))); c.stroke(); c.setLineDash([]);
+  const g2=c.createLinearGradient(0,P.t,0,h-P.b); g2.addColorStop(0,"rgba(255,158,27,.28)"); g2.addColorStop(1,"rgba(255,158,27,0)");
+  c.beginPath(); c.moveTo(X(0),h-P.b); tv.forEach((v,i)=>c.lineTo(X(i),Yt(v))); c.lineTo(X(tv.length-1),h-P.b); c.closePath(); c.fillStyle=g2; c.fill();
+  c.beginPath(); tv.forEach((v,i)=>i?c.lineTo(X(i),Yt(v)):c.moveTo(X(i),Yt(v))); c.strokeStyle="#ff9e1b"; c.lineWidth=1.8; c.stroke();
+  c.fillStyle="#ff9e1b"; c.beginPath(); c.arc(X(tv.length-1),Yt(tv[tv.length-1]),2.6,0,7); c.fill();
+}
+
+/* ---------- trade ---------- */
+$("#tab-buy").onclick=()=>{ side="buy"; $("#tab-buy").classList.add("on"); $("#tab-sell").classList.remove("on"); $("#amtu").textContent="BNB"; $("#amt").value="0.01"; recalc(); updateExecLabel(); };
+$("#tab-sell").onclick=()=>{ side="sell"; $("#tab-sell").classList.add("on"); $("#tab-buy").classList.remove("on"); const s=secs.find(x=>x.token===selected); $("#amtu").textContent=s?s.sym:"TKN"; $("#amt").value="1000000"; recalc(); updateExecLabel(); };
+$("#amt").addEventListener("input",recalc);
+function renderQuick(){
+  const q=$("#quick");
+  if(side==="buy") q.innerHTML=[0.005,0.01,0.02,0.05].map(v=>`<span data-v="${v}">${v}</span>`).join("");
+  else q.innerHTML=["25%","50%","100%"].map(v=>`<span data-v="${v}">${v}</span>`).join("");
+  q.querySelectorAll("span").forEach(el=>el.onclick=async()=>{
+    if(side==="buy"){ $("#amt").value=el.dataset.v; }
+    else if(me){ const s=secs.find(x=>x.token===selected); const e=new ethers.Contract(s.token,ERC20_ABI,readProvider); const bal=await e.balanceOf(me); $("#amt").value=(Number(fmt(bal))*parseInt(el.dataset.v)/100).toFixed(0); }
+    recalc();
+  });
+}
+async function recalc(){
+  renderQuick(); const s=secs.find(x=>x.token===selected); if(!s) return;
+  const amt=parseFloat($("#amt").value)||0;
+  try{
+    if(side==="buy"){ const out=amt>0?await padRead.quoteBuy(s.token,pe(String(amt))):0n;
+      $("#i-get").textContent=Number(fmt(out)).toLocaleString("en",{maximumFractionDigits:0})+" "+s.sym;
+      $("#i-impact").textContent="+"+Math.min(amt/(0.05+ +fmt(s.realBnb))*100,80).toFixed(1)+"%";
+      $("#i-fee").textContent=(amt*0.01).toFixed(4)+" BNB";
+    } else { const out=amt>0?await padRead.quoteSell(s.token,pe(String(amt))):0n;
+      $("#i-get").textContent=Number(fmt(out)).toFixed(5)+" BNB";
+      $("#i-impact").textContent="-"+Math.min(amt/1e8,60).toFixed(1)+"%";
+      $("#i-fee").textContent=(Number(fmt(out))*0.01).toFixed(6)+" BNB";
+    }
+  }catch(e){ $("#i-get").textContent="—"; }
+}
+$("#exec").onclick=async()=>{
+  if(!isConnected()){ connect(); return; }
+  const s=secs.find(x=>x.token===selected); if(!s||s.graduated) return;
+  const amt=parseFloat($("#amt").value)||0; if(amt<=0) return;
+  const btn=$("#exec"); btn.disabled=true; const lbl=btn.textContent;
+  try{
+    if(side==="buy"){ status("CONFIRM BUY IN WALLET…"); const tx=await padWrite.buy(s.token,0,{value:pe(String(amt))});
+      btn.textContent="PENDING "+tx.hash.slice(0,10)+"…"; await tx.wait(); status("FILLED · BOUGHT "+s.sym);
+    } else { const e=new ethers.Contract(s.token,ERC20_ABI,signer); const need=pe(String(amt)); const alw=await e.allowance(me,C.LAUNCHPAD);
+      if(alw<need){ status("APPROVE IN WALLET…"); const a=await e.approve(C.LAUNCHPAD,need); await a.wait(); }
+      status("CONFIRM SELL IN WALLET…"); const tx=await padWrite.sell(s.token,need,0); btn.textContent="PENDING "+tx.hash.slice(0,10)+"…"; await tx.wait(); status("FILLED · SOLD "+s.sym);
+    }
+    await loadSecurities(); await updateBal(); select(s.token);
+  }catch(e){ status("REJECTED · "+(e.shortMessage||e.message||"error")); }
+  btn.disabled=false; updateExecLabel();
+};
+
+async function poll(){
+  for(const s of secs){ try{ const price=await padRead.currentPrice(s.token); s.price=price;
+    const h=hist[s.token]; if(h){ h.push({price:Number(price)||h[h.length-1].price,asset:Number(s.assetPx)||h[h.length-1].asset}); if(h.length>80)h.shift(); } }catch(e){} }
+  renderTable(); renderTicker(); if(selected) drawChart();
+}
+
+/* ---------- launch ---------- */
+$("#fk-launch").onclick=()=>$("#ovl").classList.add("on");
+$("#mclose").onclick=()=>$("#ovl").classList.remove("on");
+$("#ovl").onclick=e=>{ if(e.target===$("#ovl")) $("#ovl").classList.remove("on"); };
+$("#fk-refresh").onclick=async()=>{ status("REFRESHING…"); await loadSecurities(); if(selected)select(selected); status("REFRESHED"); };
+$("#f-deploy").onclick=async()=>{
+  if(!isConnected()){ connect(); return; }
+  const name=$("#f-name").value.trim()||"NewPair"; const ticker=($("#f-ticker").value.trim()||"NEW").toUpperCase();
+  const feedId=$("#f-feed").value; const feed=feedList.find(f=>f.id===feedId); const buy=parseFloat($("#f-buy").value)||0;
+  const st=$("#f-status");
+  try{
+    st.textContent="CONFIRM IN WALLET…";
+    const val=buy>0?pe(String(buy)):0n;
+    const tx=await padWrite.createPair(name,ticker,feed?feed.desc:"asset",feedId,val,{value:val});
+    st.textContent="PENDING "+tx.hash.slice(0,12)+"…"; await tx.wait();
+    st.textContent="DEPLOYED ✓"; await loadSecurities(); const nw=secs[secs.length-1]; if(nw) select(nw.token);
+    setTimeout(()=>{ $("#ovl").classList.remove("on"); st.textContent=""; },1200);
+    status("NEW SECURITY LISTED · $"+ticker);
+  }catch(e){ st.textContent="FAILED · "+(e.shortMessage||e.message); }
+};
+
+window.addEventListener("resize",()=>{ if(selected) drawChart(); });
+boot();
+</script>
+</body>
+</html>

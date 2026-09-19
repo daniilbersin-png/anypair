@@ -1,0 +1,24 @@
+# deps
+node_modules/
+contracts/lib/
+contracts/out/
+contracts/cache/
+contracts/broadcast/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+*.key
+keystore/
+
+# builds
+web/.next/
+web/out/
+dist/
+build/
+
+# misc
+.DS_Store
+*.log
+coverage/

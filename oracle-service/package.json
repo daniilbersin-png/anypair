@@ -1,0 +1,17 @@
+{
+  "name": "anypair-oracle-service",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Off-chain price updater that pushes real asset prices into the AnyPair PriceOracle contract.",
+  "scripts": {
+    "start": "node src/index.js",
+    "once": "ONCE=1 node src/index.js",
+    "dry": "DRY_RUN=1 ONCE=1 node src/index.js",
+    "fetch": "node src/fetchTest.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.4"
+  }
+}

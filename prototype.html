@@ -1,0 +1,857 @@
+<title>AnyPair Launchpad</title>
+<style>
+  :root{
+    color-scheme: dark;
+    --ground:#0B0910;
+    --surface:#141019;
+    --surface-2:#1C1626;
+    --surface-3:#251E33;
+    --border:#2C2440;
+    --border-soft:#221B31;
+    --text:#EFEAF7;
+    --muted:#9A90AE;
+    --muted-2:#6E6584;
+    --gold:#F0B90B;      /* BNB */
+    --gold-dim:#8a6a08;
+    --synth:#FF3DA6;     /* pairing / synthetic */
+    --synth-dim:#7a1e51;
+    --cyan:#39D0FF;
+    --up:#2FD98A;
+    --down:#FF5C6C;
+    --font-display:"Chakra Petch",ui-sans-serif,system-ui,sans-serif;
+    --font-body:"Manrope",ui-sans-serif,system-ui,sans-serif;
+    --font-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
+    --r:14px;
+    --maxw:1180px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1100px 620px at 82% -8%, rgba(240,185,11,.10), transparent 60%),
+      radial-gradient(900px 540px at 8% 4%, rgba(255,61,166,.10), transparent 62%),
+      var(--ground);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:20px}
+  .mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+  .disp{font-family:var(--font-display)}
+  .up{color:var(--up)} .down{color:var(--down)}
+
+  /* NAV */
+  header.nav{
+    position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+    backdrop-filter:blur(14px);
+    background:rgba(11,9,16,.72);
+    border-bottom:1px solid var(--border-soft);
+  }
+  .nav-in{display:flex;align-items:center;gap:18px;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:19px;letter-spacing:.3px}
+  .logo .mk{
+    width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--gold),var(--synth));
+    color:#100; font-weight:700; font-family:var(--font-display); font-size:17px;
+    box-shadow:0 0 24px rgba(255,61,166,.35);
+  }
+  .logo b{color:var(--gold)} .logo span.any{color:var(--synth)}
+  .nav-links{display:flex;gap:22px;margin-left:14px}
+  .nav-links a{color:var(--muted);font-size:14px;font-weight:600;transition:color .15s}
+  .nav-links a:hover{color:var(--text)}
+  .nav-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .chain-pill{
+    display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;
+    padding:7px 11px;border-radius:999px;border:1px solid var(--gold-dim);
+    color:var(--gold);background:rgba(240,185,11,.07)
+  }
+  .chain-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold)}
+  .btn{
+    font-family:var(--font-display);font-weight:600;font-size:14px;cursor:pointer;
+    border-radius:11px;padding:10px 16px;border:1px solid transparent;transition:transform .12s,box-shadow .2s,background .2s;
+    color:#140d02;background:var(--gold);letter-spacing:.2px;
+  }
+  .btn:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(240,185,11,.28)}
+  .btn.synth{background:var(--synth);color:#160310}
+  .btn.synth:hover{box-shadow:0 6px 24px rgba(255,61,166,.35)}
+  .btn.ghost{background:transparent;border-color:var(--border);color:var(--text)}
+  .btn.ghost:hover{border-color:var(--synth);box-shadow:none}
+  .btn.sm{padding:8px 13px;font-size:13px;border-radius:10px}
+  .btn.block{width:100%;text-align:center;padding:13px}
+  .btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+  /* HERO */
+  .hero{padding:54px 0 30px;position:relative}
+  .hero-grid{display:grid;grid-template-columns:1.15fr .95fr;gap:40px;align-items:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;font-family:var(--font-display);
+    font-size:12px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;
+    color:var(--synth);border:1px solid var(--synth-dim);border-radius:999px;padding:6px 12px;
+    background:rgba(255,61,166,.06);margin-bottom:22px
+  }
+  h1.head{
+    font-family:var(--font-display);font-weight:700;font-size:clamp(38px,5.4vw,62px);
+    line-height:1.02;letter-spacing:-.5px;margin:0 0 18px;text-wrap:balance
+  }
+  h1.head .g{color:var(--gold)}
+  h1.head .rot{color:var(--synth);display:inline-block;min-width:1ch}
+  .sub{font-size:17px;color:var(--muted);max-width:44ch;margin:0 0 26px}
+  .hero-cta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:30px}
+  .stats{display:flex;gap:26px;flex-wrap:wrap}
+  .stat .v{font-family:var(--font-display);font-weight:700;font-size:24px}
+  .stat .l{font-size:12px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+
+  /* hero card - create mini */
+  .hero-card{
+    background:linear-gradient(180deg,var(--surface-2),var(--surface));
+    border:1px solid var(--border);border-radius:20px;padding:20px;
+    box-shadow:0 30px 80px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.03)
+  }
+  .hc-title{font-family:var(--font-display);font-size:13px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .pairbox{display:flex;align-items:stretch;gap:10px}
+  .pairbox .side{flex:1;background:var(--ground);border:1px solid var(--border);border-radius:13px;padding:13px}
+  .pairbox .side small{font-size:11px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  .pairbox .side .big{font-family:var(--font-display);font-weight:700;font-size:19px;margin-top:5px;display:flex;align-items:center;gap:8px}
+  .xsign{align-self:center;font-family:var(--font-display);font-weight:700;color:var(--synth);font-size:22px}
+  .asset-rot{color:var(--gold)}
+  .oracle-badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 8px;border-radius:999px;margin-top:12px}
+  .ob-real{background:rgba(47,217,138,.12);color:var(--up);border:1px solid rgba(47,217,138,.3)}
+  .ob-index{background:rgba(57,208,255,.1);color:var(--cyan);border:1px solid rgba(57,208,255,.3)}
+  .ob-larp{background:rgba(255,61,166,.1);color:var(--synth);border:1px solid var(--synth-dim)}
+  .hc-spark{margin-top:14px;height:66px;width:100%;display:block}
+  .hero-card .btn{margin-top:14px}
+
+  /* SECTION */
+  section{padding:44px 0}
+  .sec-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .sec-head h2{font-family:var(--font-display);font-weight:700;font-size:clamp(24px,3vw,32px);margin:0;letter-spacing:-.3px}
+  .sec-head p{color:var(--muted);margin:6px 0 0;font-size:14.5px}
+  .kick{font-family:var(--font-display);font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:var(--synth);font-weight:600;margin-bottom:6px}
+
+  /* filter chips */
+  .chips{display:flex;gap:9px;flex-wrap:wrap}
+  .chip{
+    font-family:var(--font-display);font-size:13px;font-weight:600;cursor:pointer;
+    padding:8px 14px;border-radius:999px;border:1px solid var(--border);color:var(--muted);
+    background:var(--surface);transition:.15s;user-select:none
+  }
+  .chip:hover{color:var(--text);border-color:var(--muted-2)}
+  .chip.on{background:var(--text);color:var(--ground);border-color:var(--text)}
+
+  /* token grid */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+  .card{
+    background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);
+    padding:16px;cursor:pointer;transition:transform .14s,border-color .18s,box-shadow .18s;position:relative;overflow:hidden
+  }
+  .card:hover{transform:translateY(-3px);border-color:var(--synth-dim);box-shadow:0 18px 40px -22px rgba(255,61,166,.5)}
+  .card-top{display:flex;align-items:center;gap:11px}
+  .tk-emoji{width:42px;height:42px;border-radius:11px;background:var(--surface-3);display:grid;place-items:center;font-size:22px;flex:none}
+  .tk-name{font-family:var(--font-display);font-weight:700;font-size:16px;line-height:1.1}
+  .tk-ticker{font-family:var(--font-mono);font-size:12px;color:var(--muted-2)}
+  .pairline{font-size:12.5px;color:var(--muted);margin-top:12px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .pairline b{color:var(--gold);font-weight:700}
+  .card-spark{width:100%;height:44px;display:block;margin:12px 0 10px}
+  .card-foot{display:flex;align-items:flex-end;justify-content:space-between}
+  .price{font-family:var(--font-mono);font-weight:600;font-size:15px}
+  .chg{font-family:var(--font-mono);font-size:13px;font-weight:600}
+  .mc{font-size:11px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .prog{height:5px;border-radius:999px;background:var(--surface-3);margin-top:11px;overflow:hidden}
+  .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--synth));border-radius:999px}
+  .prog-l{font-size:10.5px;color:var(--muted-2);margin-top:5px;display:flex;justify-content:space-between;font-weight:600;letter-spacing:.3px}
+
+  /* featured / detail */
+  .detail{
+    background:linear-gradient(180deg,var(--surface-2),var(--surface));
+    border:1px solid var(--border);border-radius:20px;overflow:hidden;
+    display:grid;grid-template-columns:1.6fr 1fr
+  }
+  .det-main{padding:22px;border-right:1px solid var(--border-soft)}
+  .det-head{display:flex;align-items:center;gap:13px;margin-bottom:4px}
+  .det-head .tk-emoji{width:48px;height:48px;font-size:25px}
+  .det-title{font-family:var(--font-display);font-weight:700;font-size:22px}
+  .det-pair{font-size:13px;color:var(--muted)}
+  .det-pair b{color:var(--gold)}
+  .tf-row{display:flex;gap:8px;margin:16px 0 6px;flex-wrap:wrap;align-items:center}
+  .tf{font-family:var(--font-mono);font-size:12px;font-weight:600;padding:5px 10px;border-radius:8px;border:1px solid var(--border);color:var(--muted);cursor:pointer}
+  .tf.on{background:var(--surface-3);color:var(--text);border-color:var(--muted-2)}
+  .legend{margin-left:auto;display:flex;gap:14px;font-size:12px;color:var(--muted)}
+  .legend i{display:inline-block;width:16px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+  #mainChart{width:100%;height:250px;display:block}
+  .det-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+  .met{background:var(--ground);border:1px solid var(--border-soft);border-radius:11px;padding:11px}
+  .met .l{font-size:10.5px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .met .v{font-family:var(--font-mono);font-weight:600;font-size:15px;margin-top:4px}
+
+  /* trade panel */
+  .det-side{padding:22px;display:flex;flex-direction:column;gap:14px}
+  .bs-tabs{display:flex;background:var(--ground);border:1px solid var(--border);border-radius:11px;padding:4px;gap:4px}
+  .bs-tab{flex:1;text-align:center;font-family:var(--font-display);font-weight:600;font-size:14px;padding:9px;border-radius:8px;cursor:pointer;color:var(--muted);transition:.15s}
+  .bs-tab.buy.on{background:rgba(47,217,138,.15);color:var(--up)}
+  .bs-tab.sell.on{background:rgba(255,92,108,.13);color:var(--down)}
+  .field{background:var(--ground);border:1px solid var(--border);border-radius:11px;padding:12px}
+  .field label{font-size:11px;color:var(--muted-2);text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+  .field .inrow{display:flex;align-items:center;gap:8px;margin-top:6px}
+  .field input{
+    background:transparent;border:none;outline:none;color:var(--text);
+    font-family:var(--font-mono);font-weight:600;font-size:20px;width:100%
+  }
+  .field .cur{font-family:var(--font-display);font-weight:700;color:var(--muted);font-size:14px}
+  .quick{display:flex;gap:6px;margin-top:9px}
+  .quick span{flex:1;text-align:center;font-family:var(--font-mono);font-size:12px;padding:6px;border-radius:7px;background:var(--surface-3);color:var(--muted);cursor:pointer;font-weight:600}
+  .quick span:hover{color:var(--text)}
+  .trade-info{font-size:12.5px;color:var(--muted);display:flex;flex-direction:column;gap:7px}
+  .trade-info .row{display:flex;justify-content:space-between}
+  .trade-info .row b{color:var(--text);font-family:var(--font-mono);font-weight:600}
+  .oracle-note{font-size:12px;color:var(--muted);background:var(--ground);border:1px dashed var(--border);border-radius:11px;padding:12px;line-height:1.55}
+  .oracle-note b{color:var(--text)}
+
+  /* oracle tiers */
+  .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+  .tier{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);padding:20px;position:relative}
+  .tier .tno{font-family:var(--font-display);font-size:12px;font-weight:700;letter-spacing:1px;color:var(--muted-2)}
+  .tier h3{font-family:var(--font-display);font-size:18px;margin:8px 0 4px}
+  .tier .tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px;display:inline-block;margin-bottom:10px}
+  .tier p{font-size:13.5px;color:var(--muted);margin:0}
+  .tier ul{margin:12px 0 0;padding-left:16px;font-size:12.5px;color:var(--muted)}
+  .tier ul li{margin-bottom:5px}
+  .tier.real{border-top:2px solid var(--up)}
+  .tier.index{border-top:2px solid var(--cyan)}
+  .tier.larp{border-top:2px solid var(--synth)}
+
+  /* how it works flow */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:8px}
+  .step{background:var(--surface);border:1px solid var(--border-soft);border-radius:var(--r);padding:18px}
+  .step .n{font-family:var(--font-display);font-weight:700;font-size:26px;color:var(--synth);opacity:.9}
+  .step h4{font-family:var(--font-display);font-size:15px;margin:8px 0 6px}
+  .step p{font-size:13px;color:var(--muted);margin:0}
+
+  /* modal */
+  .overlay{position:fixed;inset:0;background:rgba(6,4,10,.72);backdrop-filter:blur(6px);z-index:80;display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow-y:auto}
+  .overlay.on{display:flex}
+  .modal{width:100%;max-width:540px;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;box-shadow:0 40px 100px -30px #000}
+  .modal h3{font-family:var(--font-display);font-size:22px;margin:0 0 4px}
+  .modal .msub{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+  .m-close{float:right;cursor:pointer;color:var(--muted);font-size:22px;line-height:1;margin-top:-4px}
+  .m-field{margin-bottom:15px}
+  .m-field label{display:block;font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+  .m-field input,.m-field select{
+    width:100%;background:var(--ground);border:1px solid var(--border);border-radius:11px;
+    padding:12px;color:var(--text);font-family:var(--font-body);font-size:15px;outline:none
+  }
+  .m-field input:focus,.m-field select:focus{border-color:var(--synth)}
+  .m-2col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .asset-presets{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+  .apreset{font-size:12px;padding:6px 10px;border-radius:999px;background:var(--surface-3);color:var(--muted);cursor:pointer;border:1px solid transparent}
+  .apreset:hover,.apreset.on{color:var(--text);border-color:var(--synth)}
+  .tier-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:7px}
+  .tp{border:1px solid var(--border);border-radius:11px;padding:11px;cursor:pointer;text-align:center;font-size:12px;color:var(--muted);transition:.15s}
+  .tp .tpt{font-family:var(--font-display);font-weight:700;font-size:13px;display:block;margin-bottom:3px}
+  .tp.on{border-color:var(--synth);background:rgba(255,61,166,.07);color:var(--text)}
+
+  /* toast */
+  #toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(140%);z-index:90;
+    background:var(--surface-3);border:1px solid var(--border);border-radius:12px;padding:13px 18px;
+    font-weight:600;font-size:14px;box-shadow:0 20px 50px -20px #000;transition:transform .32s cubic-bezier(.2,.8,.2,1);max-width:90vw}
+  #toast.on{transform:translateX(-50%) translateY(0)}
+  #toast .em{margin-right:8px}
+
+  footer{border-top:1px solid var(--border-soft);padding:34px 0;margin-top:30px}
+  .foot-in{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+  .disclaimer{font-size:12px;color:var(--muted-2);max-width:60ch;line-height:1.6}
+  .disclaimer b{color:var(--muted)}
+
+  @media(max-width:900px){
+    .hero-grid{grid-template-columns:1fr;gap:28px}
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .detail{grid-template-columns:1fr}
+    .det-main{border-right:none;border-bottom:1px solid var(--border-soft)}
+    .tiers,.flow{grid-template-columns:1fr}
+    .nav-links{display:none}
+  }
+  @media(max-width:560px){
+    .grid{grid-template-columns:1fr}
+    .det-metrics{grid-template-columns:repeat(2,1fr)}
+    .m-2col{grid-template-columns:1fr}
+    .stats{gap:18px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Manrope:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<!-- ===================== NAV ===================== -->
+<header class="nav">
+  <div class="wrap nav-in">
+    <div class="logo"><span class="mk">⇄</span><span><b>Any</b><span class="any">Pair</span></span></div>
+    <nav class="nav-links">
+      <a href="#feed">Пары</a>
+      <a href="#detail">Торговля</a>
+      <a href="#oracle">Оракул</a>
+      <a href="#how">Как это работает</a>
+    </nav>
+    <div class="nav-right">
+      <span class="chain-pill"><span class="dot"></span>BNB Chain</span>
+      <button class="btn ghost sm" id="connectBtn">Connect Wallet</button>
+      <button class="btn synth sm" id="launchTop">+ Запустить пару</button>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== HERO ===================== -->
+<section class="hero">
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">● Первый launchpad такого рода на BNB</span>
+      <h1 class="head">Спарь монету<br>с <span class="rot" id="rotWord">чем угодно</span>.</h1>
+      <p class="sub">Не просто мем-токен. Токен, чья цена привязана через оракул к <b style="color:var(--gold)">любому активу</b> в мире — скину CS, покемон-карте, углю, куриным яйцам или солнечной энергии. Создай пару за 30 секунд.</p>
+      <div class="hero-cta">
+        <button class="btn synth" id="launchHero">Запустить пару →</button>
+        <a href="#feed" class="btn ghost">Смотреть рынки</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="v mono" id="s-pairs">2,417</div><div class="l">пар создано</div></div>
+        <div class="stat"><div class="v mono">$<span id="s-vol">8.4</span>M</div><div class="l">объём 24ч</div></div>
+        <div class="stat"><div class="v mono" id="s-online">1,930</div><div class="l">трейдеров онлайн</div></div>
+      </div>
+    </div>
+
+    <div class="hero-card">
+      <div class="hc-title">⚡ Живой пример пары</div>
+      <div class="pairbox">
+        <div class="side">
+          <small>Твой токен</small>
+          <div class="big">🐸 <span>$PEPEGG</span></div>
+        </div>
+        <div class="xsign">✕</div>
+        <div class="side">
+          <small>Привязан к</small>
+          <div class="big"><span class="asset-rot" id="assetRot">🥚 Куриным яйцам</span></div>
+        </div>
+      </div>
+      <span class="oracle-badge ob-real" id="hcBadge">✓ Реальный фид цены</span>
+      <canvas class="hc-spark" id="hcSpark"></canvas>
+      <button class="btn synth block" id="launchHero2">Создать такую пару</button>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FEED ===================== -->
+<section id="feed">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="kick">Живые рынки</div>
+        <h2>Пары, которые уже торгуются</h2>
+        <p>Каждый токен спарен с реальным или ларп-активом. Цена оракула тянет всё остальное.</p>
+      </div>
+      <div class="chips" id="chips">
+        <span class="chip on" data-f="all">Все</span>
+        <span class="chip" data-f="trend">🔥 В тренде</span>
+        <span class="chip" data-f="skins">🔫 Скины</span>
+        <span class="chip" data-f="commodity">🛢 Сырьё</span>
+        <span class="chip" data-f="absurd">🤡 Абсурд</span>
+      </div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+</section>
+
+<!-- ===================== DETAIL ===================== -->
+<section id="detail">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="kick">Терминал</div>
+        <h2>Торговля по bonding curve</h2>
+        <p>Пока пара не набрала ликвидность — торгуешь напрямую по кривой. Дальше — выход на PancakeSwap.</p>
+      </div>
+    </div>
+    <div class="detail">
+      <div class="det-main">
+        <div class="det-head">
+          <div class="tk-emoji" id="d-emoji">🐉</div>
+          <div>
+            <div class="det-title" id="d-title">DragonLord</div>
+            <div class="det-pair">✕ привязан к <b id="d-asset">★ Dragon Lore (FN)</b> · <span id="d-oracle">Steam Market фид</span></div>
+          </div>
+        </div>
+        <div class="tf-row">
+          <span class="tf on">5m</span><span class="tf">1H</span><span class="tf">1D</span><span class="tf">1W</span>
+          <div class="legend">
+            <span><i style="background:var(--gold)"></i>Токен</span>
+            <span><i style="background:var(--synth)"></i>Актив-оракул</span>
+          </div>
+        </div>
+        <canvas id="mainChart"></canvas>
+        <div class="det-metrics">
+          <div class="met"><div class="l">Цена</div><div class="v" id="m-price">$0.0428</div></div>
+          <div class="met"><div class="l">24ч</div><div class="v up" id="m-chg">+18.4%</div></div>
+          <div class="met"><div class="l">Market cap</div><div class="v" id="m-mc">$41.2K</div></div>
+          <div class="met"><div class="l">Держателей</div><div class="v" id="m-hold">312</div></div>
+        </div>
+      </div>
+
+      <div class="det-side">
+        <div class="bs-tabs">
+          <div class="bs-tab buy on" id="tabBuy">Купить</div>
+          <div class="bs-tab sell" id="tabSell">Продать</div>
+        </div>
+        <div class="field">
+          <label id="amtLabel">Вы платите</label>
+          <div class="inrow">
+            <input id="amtIn" type="text" inputmode="decimal" value="0.5">
+            <span class="cur" id="amtCur">BNB</span>
+          </div>
+          <div class="quick" id="quick"></div>
+        </div>
+        <div class="trade-info">
+          <div class="row"><span>Получите ≈</span><b id="ti-get">11.68 tokens</b></div>
+          <div class="row"><span>Цена входа</span><b id="ti-price">$0.0428</b></div>
+          <div class="row"><span>Влияние на цену</span><b id="ti-impact" class="up">+2.1%</b></div>
+          <div class="row"><span>Комиссия (1%)</span><b id="ti-fee">0.005 BNB</b></div>
+        </div>
+        <button class="btn block" id="tradeBtn" style="background:var(--up);color:#04140c">Купить DragonLord</button>
+        <div class="prog" style="margin-top:2px"><i id="d-prog" style="width:64%"></i></div>
+        <div class="prog-l"><span id="d-progL">64% до листинга на PancakeSwap</span><span>🐰</span></div>
+        <div class="oracle-note" id="d-note">
+          <b>Как работает эта пара:</b> цена $DragonLord следует за реальным Steam Market-фидом скина ★ Dragon Lore. Оракул обновляет базовую цену каждые 15 мин, bonding curve добавляет мем-волатильность сверху.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== ORACLE ===================== -->
+<section id="oracle">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="kick">Сердце системы</div>
+        <h2>Три уровня оракула</h2>
+        <p>Честно: не у всего есть рыночная цена. Поэтому каждый актив имеет свой источник — и он всегда виден трейдеру.</p>
+      </div>
+    </div>
+    <div class="tiers">
+      <div class="tier real">
+        <div class="tno">УРОВЕНЬ 01</div>
+        <h3>Реальный фид</h3>
+        <span class="tag ob-real">✓ On-chain verified</span>
+        <p>Актив имеет настоящий рынок — цену тянем по API и пушим в оракул на BNB.</p>
+        <ul>
+          <li>Скины CS2 → Steam Market API</li>
+          <li>Покемон / TCG → индекс PSA / TCGplayer</li>
+          <li>Золото, нефть, уголь, пиломатериалы → сырьевые фиды</li>
+          <li>Крипта → Chainlink / Binance Oracle</li>
+        </ul>
+      </div>
+      <div class="tier index">
+        <div class="tno">УРОВЕНЬ 02</div>
+        <h3>Комьюнити-индекс</h3>
+        <span class="tag ob-index">◆ DAO-managed</span>
+        <p>Рынок есть, но раздроблен или неликвиден. Цену задаёт голосование стейкеров + споты.</p>
+        <ul>
+          <li>Солнечная энергия (kWh по регионам)</li>
+          <li>Локальные товары, куриные крылья 🍗</li>
+          <li>Редкие коллекционки без единого рынка</li>
+          <li>Спорные активы → медиана голосов</li>
+        </ul>
+      </div>
+      <div class="tier larp">
+        <div class="tno">УРОВЕНЬ 03</div>
+        <h3>Чистый ларп</h3>
+        <span class="tag ob-larp">☺ For the memes</span>
+        <p>Цены нет и быть не может — но идея топовая. Псевдо-фид на честном random walk + сид.</p>
+        <ul>
+          <li>«Уровень воды в реке Волге»</li>
+          <li>Абстракции: настроение рынка, вайб</li>
+          <li>Всё помечено ярлыком LARP — без обмана</li>
+          <li>Задача одна: завируситься 🚀</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== HOW ===================== -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head">
+      <div>
+        <div class="kick">Путь пары</div>
+        <h2>От идеи до PancakeSwap</h2>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="step"><div class="n">01</div><h4>Создай пару</h4><p>Имя, тикер, выбери актив-якорь и уровень оракула. Деплой контракта в один клик.</p></div>
+      <div class="step"><div class="n">02</div><h4>Bonding curve</h4><p>Торговля сразу. Цена растёт по кривой с каждой покупкой — никакого пресейла и рагов.</p></div>
+      <div class="step"><div class="n">03</div><h4>Оракул рулит</h4><p>Базовая цена следует за активом. Мем-волатильность живёт поверх — лучшее из двух миров.</p></div>
+      <div class="step"><div class="n">04</div><h4>Листинг</h4><p>Набрал порог ликвидности → авто-выход на PancakeSwap, LP сжигается. 🐰🔥</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="wrap foot-in">
+    <div class="logo"><span class="mk">⇄</span><span><b>Any</b><span class="any">Pair</span></span></div>
+    <p class="disclaimer"><b>Прототип / концепт.</b> Это интерактивный демо-макет для BNB Chain — цены, объёмы и сделки симулированы, реальных транзакций нет. Не финансовый совет. Ларп-активы помечены явно. Следующий шаг — реальные контракты на BSC Testnet.</p>
+  </div>
+</footer>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <span class="m-close" id="mClose">✕</span>
+    <h3>Запустить новую пару</h3>
+    <p class="msub">Спарь свой токен с любым активом. Деплой на BNB Chain.</p>
+    <div class="m-2col">
+      <div class="m-field"><label>Имя токена</label><input id="f-name" placeholder="DogeCoal" maxlength="20"></div>
+      <div class="m-field"><label>Тикер</label><input id="f-ticker" placeholder="DCOAL" maxlength="8"></div>
+    </div>
+    <div class="m-field">
+      <label>Актив-якорь (с чем пара)</label>
+      <input id="f-asset" placeholder="Начни вводить: уголь, Dragon Lore, яйца...">
+      <div class="asset-presets" id="presets"></div>
+    </div>
+    <div class="m-field">
+      <label>Источник цены (оракул)</label>
+      <div class="tier-pick" id="tierPick">
+        <div class="tp on" data-t="real"><span class="tpt up">Реальный</span>рыночный API</div>
+        <div class="tp" data-t="index"><span class="tpt" style="color:var(--cyan)">Индекс</span>DAO-голос</div>
+        <div class="tp" data-t="larp"><span class="tpt" style="color:var(--synth)">Ларп</span>для мемов</div>
+      </div>
+    </div>
+    <div class="m-field"><label>Стартовая закупка (BNB) — опционально</label><input id="f-buy" type="text" inputmode="decimal" placeholder="0.1"></div>
+    <button class="btn synth block" id="deployBtn">🚀 Задеплоить пару</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const rnd = (a,b)=>a+Math.random()*(b-a);
+function mulberry(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function fmtPrice(p){ if(p>=1) return '$'+p.toFixed(3); if(p>=0.01) return '$'+p.toFixed(4); return '$'+p.toFixed(6);}
+function fmtMc(n){ if(n>=1e6) return '$'+(n/1e6).toFixed(1)+'M'; if(n>=1e3) return '$'+(n/1e3).toFixed(1)+'K'; return '$'+n.toFixed(0);}
+
+/* seeded random walk series */
+function walk(seed,n,vol,drift){
+  const r=mulberry(seed); const out=[]; let v=1;
+  for(let i=0;i<n;i++){ v*= (1 + (r()-0.5)*vol + drift); out.push(v); }
+  return out;
+}
+
+/* ---------- data ---------- */
+const ORACLE = {
+  real:{cls:'ob-real',label:'✓ Реальный фид'},
+  index:{cls:'ob-index',label:'◆ Комьюнити-индекс'},
+  larp:{cls:'ob-larp',label:'☺ Ларп'}
+};
+let ID=100;
+let tokens = [
+ {id:++ID,name:'DragonLord',ticker:'DLORD',emoji:'🐉',asset:'★ Dragon Lore (FN)',cat:['skins','trend'],oracle:'real',src:'Steam Market фид',price:0.0428,chg:18.4,mc:41200,hold:312,prog:64,seed:7},
+ {id:++ID,name:'Pepegg',ticker:'PEPEGG',emoji:'🥚',asset:'Куриные яйца (опт)',cat:['commodity','trend'],oracle:'real',src:'Сырьевой фид',price:0.0091,chg:42.7,mc:78400,hold:901,prog:88,seed:12},
+ {id:++ID,name:'CoalChad',ticker:'COAL',emoji:'🪨',asset:'Уголь (энергетич.)',cat:['commodity'],oracle:'real',src:'ICE фид',price:0.0203,chg:-6.2,mc:22100,hold:140,prog:37,seed:21},
+ {id:++ID,name:'ChariMoon',ticker:'CHARI',emoji:'🔥',asset:'Charizard PSA 10',cat:['skins','trend'],oracle:'real',src:'TCGplayer индекс',price:0.156,chg:9.1,mc:120300,hold:1540,prog:92,seed:3},
+ {id:++ID,name:'SolarPump',ticker:'SUN',emoji:'☀️',asset:'Солн. энергия kWh',cat:['absurd'],oracle:'index',src:'DAO-голос',price:0.0044,chg:3.3,mc:9800,hold:77,prog:19,seed:33},
+ {id:++ID,name:'WingsFi',ticker:'WINGS',emoji:'🍗',asset:'Куриные крылья',cat:['absurd'],oracle:'index',src:'DAO-голос',price:0.0128,chg:-2.8,mc:15600,hold:203,prog:44,seed:41},
+ {id:++ID,name:'VolgaFlow',ticker:'VOLGA',emoji:'🌊',asset:'Уровень воды р.Волга',cat:['absurd','trend'],oracle:'larp',src:'Псевдо-фид (LARP)',price:0.0007,chg:130.5,mc:31200,hold:611,prog:58,seed:55},
+ {id:++ID,name:'AK Redline',ticker:'RLINE',emoji:'🔫',asset:'AK-47 | Redline',cat:['skins'],oracle:'real',src:'Steam Market фид',price:0.031,chg:5.4,mc:19400,hold:188,prog:33,seed:9},
+ {id:++ID,name:'GigaLumber',ticker:'WOOD',emoji:'🪵',asset:'Пиломатериалы',cat:['commodity'],oracle:'real',src:'CME фид',price:0.0176,chg:1.9,mc:12700,hold:96,prog:28,seed:17},
+];
+tokens.forEach(t=>{ t.spark = walk(t.seed,40,0.10, t.chg>0?0.004:-0.003); });
+
+/* ---------- canvas spark ---------- */
+function drawSpark(canvas, data, color){
+  const dpr=window.devicePixelRatio||1;
+  const w=canvas.clientWidth, h=canvas.clientHeight;
+  if(!w) return;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  const c=canvas.getContext('2d'); c.scale(dpr,dpr);
+  const mn=Math.min(...data), mx=Math.max(...data), rng=(mx-mn)||1;
+  const X=i=>(i/(data.length-1))*w;
+  const Y=v=>h-4-((v-mn)/rng)*(h-8);
+  // area
+  const grad=c.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0,color+'44'); grad.addColorStop(1,color+'00');
+  c.beginPath(); c.moveTo(0,h);
+  data.forEach((v,i)=>c.lineTo(X(i),Y(v)));
+  c.lineTo(w,h); c.closePath(); c.fillStyle=grad; c.fill();
+  // line
+  c.beginPath(); data.forEach((v,i)=> i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));
+  c.strokeStyle=color; c.lineWidth=2; c.lineJoin='round'; c.stroke();
+  // endpoint
+  c.beginPath(); c.arc(X(data.length-1),Y(data[data.length-1]),2.6,0,7); c.fillStyle=color; c.fill();
+}
+
+/* ---------- render feed ---------- */
+let filter='all';
+function cardHTML(t){
+  const col = t.chg>=0?'var(--up)':'var(--down)';
+  const ob=ORACLE[t.oracle];
+  return `<div class="card" data-id="${t.id}">
+    <div class="card-top">
+      <div class="tk-emoji">${t.emoji}</div>
+      <div style="min-width:0">
+        <div class="tk-name">${t.name}</div>
+        <div class="tk-ticker">$${t.ticker}</div>
+      </div>
+      <span class="oracle-badge ${ob.cls}" style="margin:0 0 0 auto">${ob.label}</span>
+    </div>
+    <div class="pairline">✕ пара к <b>${t.asset}</b></div>
+    <canvas class="card-spark" data-spark="${t.id}"></canvas>
+    <div class="card-foot">
+      <div><div class="price">${fmtPrice(t.price)}</div><div class="mc">${fmtMc(t.mc)} mcap</div></div>
+      <div class="chg" style="color:${col}">${t.chg>=0?'+':''}${t.chg.toFixed(1)}%</div>
+    </div>
+    <div class="prog"><i style="width:${t.prog}%"></i></div>
+    <div class="prog-l"><span>${t.prog}% до листинга</span><span>${t.hold} 👤</span></div>
+  </div>`;
+}
+function renderFeed(){
+  const list = tokens.filter(t=> filter==='all' || t.cat.includes(filter));
+  $('#grid').innerHTML = list.map(cardHTML).join('');
+  list.forEach(t=>{ const cv=document.querySelector(`[data-spark="${t.id}"]`); if(cv) drawSpark(cv,t.spark, t.chg>=0?'#2FD98A':'#FF5C6C'); });
+  $$('.card').forEach(el=> el.onclick=()=> selectToken(+el.dataset.id));
+}
+
+/* ---------- chips ---------- */
+$('#chips').addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  $$('.chip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+  filter=c.dataset.f; renderFeed();
+});
+
+/* ---------- detail / main chart ---------- */
+let cur = tokens[0];
+let assetSeries=[], tokenSeries=[];
+function buildSeries(t){
+  const r=mulberry(t.seed+999);
+  const base = walk(t.seed+7, 60, 0.02, t.chg>0?0.002:-0.001); // underlying asset (smoother)
+  const tok = base.map((v,i)=> v * (1 + Math.sin(i/4)*0.06 + (r()-0.5)*0.14)); // token = asset + meme vol
+  assetSeries=base; tokenSeries=tok;
+}
+function drawMain(){
+  const canvas=$('#mainChart'); const dpr=window.devicePixelRatio||1;
+  const w=canvas.clientWidth, h=250; if(!w) return;
+  canvas.width=w*dpr; canvas.height=h*dpr;
+  const c=canvas.getContext('2d'); c.scale(dpr,dpr);
+  c.clearRect(0,0,w,h);
+  const all=[...assetSeries,...tokenSeries];
+  const mn=Math.min(...all), mx=Math.max(...all), rng=(mx-mn)||1;
+  const padB=22, padT=10;
+  const X=i=>(i/(tokenSeries.length-1))*w;
+  const Y=v=>h-padB-((v-mn)/rng)*(h-padB-padT);
+  // grid
+  c.strokeStyle='rgba(255,255,255,.05)'; c.lineWidth=1;
+  for(let g=0;g<=4;g++){ const y=padT+(g/4)*(h-padB-padT); c.beginPath(); c.moveTo(0,y); c.lineTo(w,y); c.stroke(); }
+  // asset line (synth/magenta, dashed-ish subtle)
+  c.beginPath(); assetSeries.forEach((v,i)=> i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));
+  c.strokeStyle='#FF3DA6'; c.lineWidth=1.6; c.globalAlpha=.7; c.stroke(); c.globalAlpha=1;
+  // token area + line (gold)
+  const grad=c.createLinearGradient(0,padT,0,h-padB);
+  grad.addColorStop(0,'rgba(240,185,11,.22)'); grad.addColorStop(1,'rgba(240,185,11,0)');
+  c.beginPath(); c.moveTo(0,h-padB);
+  tokenSeries.forEach((v,i)=>c.lineTo(X(i),Y(v))); c.lineTo(w,h-padB); c.closePath(); c.fillStyle=grad; c.fill();
+  c.beginPath(); tokenSeries.forEach((v,i)=> i?c.lineTo(X(i),Y(v)):c.moveTo(X(i),Y(v)));
+  c.strokeStyle='#F0B90B'; c.lineWidth=2.4; c.lineJoin='round'; c.stroke();
+  // endpoint glow
+  const lx=X(tokenSeries.length-1), ly=Y(tokenSeries[tokenSeries.length-1]);
+  c.beginPath(); c.arc(lx,ly,4,0,7); c.fillStyle='#F0B90B'; c.fill();
+  c.beginPath(); c.arc(lx,ly,9,0,7); c.fillStyle='rgba(240,185,11,.18)'; c.fill();
+}
+function selectToken(id, scroll){
+  cur = tokens.find(t=>t.id===id)||cur;
+  $('#d-emoji').textContent=cur.emoji;
+  $('#d-title').textContent=cur.name;
+  $('#d-asset').textContent=cur.asset;
+  $('#d-oracle').textContent=cur.src;
+  $('#m-price').textContent=fmtPrice(cur.price);
+  const chgEl=$('#m-chg'); chgEl.textContent=(cur.chg>=0?'+':'')+cur.chg.toFixed(1)+'%'; chgEl.className='v '+(cur.chg>=0?'up':'down');
+  $('#m-mc').textContent=fmtMc(cur.mc);
+  $('#m-hold').textContent=cur.hold;
+  $('#d-prog').style.width=cur.prog+'%';
+  $('#d-progL').textContent=cur.prog+'% до листинга на PancakeSwap';
+  const noteMap={
+    real:`<b>Как работает эта пара:</b> цена $${cur.ticker} следует за реальным фидом «${cur.asset}» (${cur.src}). Оракул пушит базовую цену on-chain, bonding curve добавляет мем-волатильность сверху.`,
+    index:`<b>Как работает эта пара:</b> у «${cur.asset}» нет единого рынка — цену задаёт комьюнити-индекс (${cur.src}). Стейкеры голосуют, берётся медиана. Прозрачно и on-chain.`,
+    larp:`<b>Честно — это ларп:</b> у «${cur.asset}» цены не существует. Псевдо-фид работает на детерминированном random walk по сиду. Помечено ярлыком LARP. Цель — вайб и вирусность. 🚀`
+  };
+  $('#d-note').innerHTML=noteMap[cur.oracle];
+  $('#tradeBtn').textContent = (buySide?'Купить ':'Продать ')+cur.name;
+  buildSeries(cur); drawMain(); recalcTrade();
+  if(scroll!==false) $('#detail').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+/* ---------- trade panel ---------- */
+let buySide=true;
+const BNB_USD=615;
+$('#tabBuy').onclick=()=>{buySide=true; $('#tabBuy').classList.add('on');$('#tabSell').classList.remove('on');
+  $('#amtLabel').textContent='Вы платите'; $('#amtCur').textContent='BNB'; $('#amtIn').value='0.5';
+  $('#tradeBtn').style.background='var(--up)';$('#tradeBtn').style.color='#04140c';
+  $('#tradeBtn').textContent='Купить '+cur.name; recalcTrade();};
+$('#tabSell').onclick=()=>{buySide=false;$('#tabSell').classList.add('on');$('#tabBuy').classList.remove('on');
+  $('#amtLabel').textContent='Вы продаёте'; $('#amtCur').textContent=cur.ticker; $('#amtIn').value='1000';
+  $('#tradeBtn').style.background='var(--down)';$('#tradeBtn').style.color='#160406';
+  $('#tradeBtn').textContent='Продать '+cur.name; recalcTrade();};
+const quickBuy=[0.1,0.5,1,5], quickSell=['25%','50%','100%'];
+function renderQuick(){
+  const q=$('#quick');
+  if(buySide) q.innerHTML=quickBuy.map(v=>`<span data-q="${v}">${v}</span>`).join('');
+  else q.innerHTML=quickSell.map(v=>`<span data-q="${v}">${v}</span>`).join('');
+  $$('#quick span').forEach(s=> s.onclick=()=>{
+    if(buySide) $('#amtIn').value=s.dataset.q;
+    else { const pct=parseInt(s.dataset.q)/100; $('#amtIn').value=Math.round(3000*pct); }
+    recalcTrade();
+  });
+}
+function recalcTrade(){
+  renderQuick();
+  const amt=parseFloat($('#amtIn').value)||0;
+  if(buySide){
+    const usd=amt*BNB_USD; const tok=usd/cur.price;
+    $('#ti-get').textContent=tok.toLocaleString('en',{maximumFractionDigits:2})+' '+cur.ticker;
+    $('#ti-price').textContent=fmtPrice(cur.price);
+    const impact=Math.min(amt*4.2,60);
+    $('#ti-impact').textContent='+'+impact.toFixed(1)+'%'; $('#ti-impact').className='up';
+    $('#ti-fee').textContent=(amt*0.01).toFixed(3)+' BNB';
+  } else {
+    const usd=amt*cur.price; const bnb=usd/BNB_USD;
+    $('#ti-get').textContent=bnb.toFixed(4)+' BNB';
+    $('#ti-price').textContent=fmtPrice(cur.price);
+    const impact=Math.min(amt/3000*30,55);
+    $('#ti-impact').textContent='-'+impact.toFixed(1)+'%'; $('#ti-impact').className='down';
+    $('#ti-fee').textContent=(bnb*0.01).toFixed(4)+' BNB';
+  }
+}
+$('#amtIn').addEventListener('input',recalcTrade);
+$('#tradeBtn').onclick=()=>{
+  if(!connected){ toast('👛 Сначала подключи кошелёк'); return; }
+  const amt=parseFloat($('#amtIn').value)||0;
+  if(buySide){
+    // move curve up
+    cur.price*=(1+Math.min(amt*0.04,0.4)); cur.prog=Math.min(cur.prog+Math.round(amt*3),99);
+    cur.hold+=1; cur.mc*=(1+Math.min(amt*0.05,0.5));
+    balance-=amt; toast(`🚀 Куплено ${cur.name}! Цена подросла`);
+    if(cur.prog>=99) setTimeout(()=>toast('🐰🔥 Пара вышла на PancakeSwap!'),700);
+  } else {
+    cur.price*=(1-Math.min(amt/3000*0.25,0.35)); cur.prog=Math.max(cur.prog-3,2);
+    balance+= (amt*cur.price/BNB_USD); toast(`💸 Продано ${cur.name}`);
+  }
+  updateBalance(); selectToken(cur.id); renderFeed();
+};
+
+/* ---------- wallet ---------- */
+let connected=false, balance=4.20;
+function updateBalance(){
+  if(connected) $('#connectBtn').textContent=`0x7F…a9c2 · ${balance.toFixed(2)} BNB`;
+}
+$('#connectBtn').onclick=()=>{
+  if(connected){ toast('Уже подключено 👛'); return; }
+  connected=true; $('#connectBtn').classList.remove('ghost'); $('#connectBtn').style.background='var(--surface-3)';$('#connectBtn').style.color='var(--text)';
+  updateBalance(); toast('👛 Кошелёк подключён (демо)');
+};
+
+/* ---------- modal ---------- */
+const overlay=$('#overlay');
+function openModal(){ overlay.classList.add('on'); document.body.style.overflow='hidden'; }
+function closeModal(){ overlay.classList.remove('on'); document.body.style.overflow=''; }
+['#launchTop','#launchHero','#launchHero2'].forEach(s=> $(s).onclick=openModal);
+$('#mClose').onclick=closeModal;
+overlay.onclick=e=>{ if(e.target===overlay) closeModal(); };
+
+const presetAssets=[
+ {n:'★ Dragon Lore',t:'real',e:'🐉'},{n:'Куриные яйца',t:'real',e:'🥚'},{n:'Уголь',t:'real',e:'🪨'},
+ {n:'Charizard PSA10',t:'real',e:'🔥'},{n:'Золото',t:'real',e:'🥇'},{n:'Солн. энергия kWh',t:'index',e:'☀️'},
+ {n:'Куриные крылья',t:'index',e:'🍗'},{n:'Уровень р.Волга',t:'larp',e:'🌊'},{n:'Вайб рынка',t:'larp',e:'🧘'}
+];
+$('#presets').innerHTML=presetAssets.map(a=>`<span class="apreset" data-n="${a.n}" data-t="${a.t}" data-e="${a.e}">${a.e} ${a.n}</span>`).join('');
+let pickTier='real';
+$('#presets').addEventListener('click',e=>{
+  const p=e.target.closest('.apreset'); if(!p) return;
+  $$('.apreset').forEach(x=>x.classList.remove('on')); p.classList.add('on');
+  $('#f-asset').value=p.dataset.n;
+  pickTier=p.dataset.t;
+  $$('.tp').forEach(x=>x.classList.toggle('on', x.dataset.t===pickTier));
+});
+$('#tierPick').addEventListener('click',e=>{
+  const tp=e.target.closest('.tp'); if(!tp) return;
+  $$('.tp').forEach(x=>x.classList.remove('on')); tp.classList.add('on'); pickTier=tp.dataset.t;
+});
+$('#deployBtn').onclick=()=>{
+  const name=$('#f-name').value.trim()||'NewPair';
+  const ticker=($('#f-ticker').value.trim()||'NEW').toUpperCase();
+  const asset=$('#f-asset').value.trim()||'Неизвестный актив';
+  const preset=presetAssets.find(a=>a.n===asset);
+  const t={
+    id:++ID,name,ticker,emoji:preset?preset.e:'🎯',asset,
+    cat:['trend', pickTier==='larp'?'absurd':'commodity'], oracle:pickTier,
+    src: pickTier==='real'?'Рыночный API':pickTier==='index'?'DAO-голос':'Псевдо-фид (LARP)',
+    price:rnd(0.0005,0.02),chg:rnd(5,60),mc:rnd(3000,12000),hold:rnd(3,40)|0,prog:rnd(2,15)|0,seed:(ID*13)%99
+  };
+  t.spark=walk(t.seed,40,0.12,0.01);
+  tokens.unshift(t);
+  filter='all'; $$('.chip').forEach(x=>x.classList.toggle('on',x.dataset.f==='all'));
+  renderFeed(); closeModal();
+  toast(`🚀 Пара $${ticker} задеплоена на BNB!`);
+  $('#f-name').value='';$('#f-ticker').value='';$('#f-asset').value='';$('#f-buy').value='';
+  setTimeout(()=>selectToken(t.id),300);
+};
+
+/* ---------- toast ---------- */
+let toastT;
+function toast(msg){ const el=$('#toast'); el.innerHTML=`<span class="em"></span>${msg}`; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),2600); }
+
+/* ---------- hero rotating word + asset ---------- */
+const rotWords=['чем угодно','скином CS','покемоном','углём','яйцами','рекой Волгой','солнцем'];
+const rotAssets=[['🥚 Куриным яйцам','ob-real','✓ Реальный фид цены'],['🐉 Dragon Lore','ob-real','✓ Steam Market фид'],['☀️ Солн. энергии','ob-index','◆ Комьюнити-индекс'],['🌊 Реке Волге','ob-larp','☺ Чистый ларп'],['🔥 Charizard PSA10','ob-real','✓ TCG индекс']];
+let ri=0;
+setInterval(()=>{ ri=(ri+1)%rotWords.length; $('#rotWord').textContent=rotWords[ri]; },2200);
+let ai=0;
+setInterval(()=>{ ai=(ai+1)%rotAssets.length; const a=rotAssets[ai];
+  $('#assetRot').textContent=a[0]; const b=$('#hcBadge'); b.className='oracle-badge '+a[1]; b.textContent=a[2];
+},2600);
+
+/* hero spark animated */
+let heroData=walk(88,42,0.09,0.006);
+function heroTick(){ heroData.push(heroData[heroData.length-1]*(1+(Math.random()-0.42)*0.09)); heroData.shift(); drawSpark($('#hcSpark'),heroData,'#FF3DA6'); }
+
+/* ---------- live ticks ---------- */
+function liveTick(){
+  tokens.forEach(t=>{
+    const move=(Math.random()-0.48)*0.03;
+    t.price*=(1+move); t.chg+= move*100*0.4;
+    t.spark.push(t.spark[t.spark.length-1]*(1+move)); if(t.spark.length>40)t.spark.shift();
+  });
+  // update visible cards cheaply
+  $$('.card').forEach(el=>{
+    const t=tokens.find(x=>x.id===+el.dataset.id); if(!t) return;
+    el.querySelector('.price').textContent=fmtPrice(t.price);
+    const chg=el.querySelector('.chg'); chg.textContent=(t.chg>=0?'+':'')+t.chg.toFixed(1)+'%'; chg.style.color=t.chg>=0?'var(--up)':'var(--down)';
+    const cv=el.querySelector('.card-spark'); if(cv) drawSpark(cv,t.spark,t.chg>=0?'#2FD98A':'#FF5C6C');
+  });
+  // detail price flicker
+  $('#m-price').textContent=fmtPrice(cur.price);
+  // stats jitter
+  $('#s-online').textContent=(1900+ (Math.random()*80|0)).toLocaleString('en');
+}
+
+/* ---------- init ---------- */
+function boot(){
+  renderFeed(); selectToken(tokens[0].id, false); recalcTrade();
+  drawSpark($('#hcSpark'),heroData,'#FF3DA6');
+  setInterval(liveTick,1400);
+  setInterval(heroTick,900);
+}
+boot();
+window.addEventListener('resize',()=>{ renderFeed(); drawMain(); drawSpark($('#hcSpark'),heroData,'#FF3DA6'); });
+</script>
