@@ -10,7 +10,20 @@ function invalidate(){review=null;$('#setup-deploy').hidden=true;$('#setup-revie
 function txLink(hash){const a=document.createElement('a');a.href=C.EXPLORER+'/tx/'+hash;a.textContent='View deployment transaction ↗';a.target='_blank';a.rel='noopener noreferrer';$('#setup-result').replaceChildren(a);}
 async function verify(){if(!signer)throw Error('Connect a wallet.');if(local)return;const [chain,accounts]=await Promise.all([injected.request({method:'eth_chainId'}),injected.request({method:'eth_accounts'})]);if(Number(chain)!==56||accounts[0]?.toLowerCase()!==owner.toLowerCase())throw Error('Wallet changed. Connect and review again.');}
 async function connect(p){if(busy||!ready)return;try{invalidate();injected=p;if(local)provider=rpc;else{await p.request({method:'eth_requestAccounts'});if(Number(await p.request({method:'eth_chainId'}))!==56)await p.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x38'}]});provider=new E.BrowserProvider(p,undefined,{cacheTimeout:-1});}signer=await provider.getSigner();owner=await signer.getAddress();await verify();p?.on?.('accountsChanged',invalidate);p?.on?.('chainChanged',invalidate);$('#setup-review').disabled=false;status('Connected: '+owner);}catch(e){signer=null;$('#setup-review').disabled=true;status(englishError(e));}}
-function add(d){if(!d?.provider||wallets.some(w=>w.provider===d.provider))return;wallets.push(d);const b=document.createElement('button');b.textContent='Connect '+String(d.info?.name||'wallet').slice(0,80);b.onclick=()=>connect(d.provider);$('#setup-wallets').append(b);}
+function walletHelp(){
+ $('#setup-wallet-empty').hidden=local||!ready||wallets.length>0;
+ $('#setup-wallet-tools').hidden=local||!ready;
+ for(const b of $('#setup-wallets').querySelectorAll('button'))b.disabled=!ready;
+}
+function add(d){if(typeof d?.provider?.request!=='function'||wallets.some(w=>w.provider===d.provider))return;wallets.push(d);const b=document.createElement('button');b.textContent='Connect '+String(d.info?.name||'wallet').slice(0,80);b.onclick=()=>connect(d.provider);$('#setup-wallets').append(b);walletHelp();if(ready&&!signer&&!busy)status('Choose your wallet above, then approve the connection in its popup.');}
+function discoverWallets(){
+ if(local||!ready||busy)return;
+ window.dispatchEvent(new Event('eip6963:requestProvider'));
+ if(window.ethereum)for(const provider of window.ethereum.providers||[window.ethereum])add({provider,info:{name:provider.isMetaMask?'MetaMask':'browser wallet'}});
+ walletHelp();if(!signer)status(wallets.length?'Choose your wallet above, then approve the connection in its popup.':'No wallet detected in this browser. Open this page in the browser where your wallet is installed.');
+}
+$('#setup-wallet-retry').onclick=discoverWallets;
+$('#setup-copy-link').onclick=async()=>{try{await navigator.clipboard.writeText(location.origin+location.pathname);status('Link copied. Paste it into the browser where your wallet is installed.');}catch{status('Copy the page address from your browser and open it in the browser where your wallet is installed.');}};
 window.addEventListener('eip6963:announceProvider',e=>add(e.detail));
 async function result(address,hash){
  const deployment=new E.Contract(address,artifacts.deployment.abi,rpc);if(!runtimeMatches(await rpc.getCode(address),artifacts.deployment))throw Error('Deployment bytecode mismatch.');
@@ -30,5 +43,5 @@ try{
  if(await rpc.getCode(FLAP_PORTAL)==='0x')throw Error('Flap Portal unavailable.');const usd=new E.Contract(C.USDT,TOKEN_ABI,rpc);if(await usd.decimals()!==18n||await usd.symbol()!=='USDT')throw Error('USDT verification failed.');
  $('#setup-config').textContent='BNB CHAIN · 56\nFlap Portal: '+FLAP_PORTAL+'\nUSDT: '+C.USDT+'\nBuild: '+artifacts.deployment.bytecodeHash;
  if(C.FLAP_GATEWAY)status('Flap gateway already configured: '+C.FLAP_GATEWAY);
- else if(!await recover()){ready=true;if(local){const b=document.createElement('button');b.textContent='Connect LOCAL TEST wallet';b.onclick=()=>connect(null);$('#setup-wallets').append(b);}else{window.dispatchEvent(new Event('eip6963:requestProvider'));if(window.ethereum)for(const provider of window.ethereum.providers||[window.ethereum])add({provider,info:{name:'browser wallet'}});}status('Connect a wallet to review deployment.');}
+ else if(!await recover()){ready=true;if(local){const b=document.createElement('button');b.textContent='Connect LOCAL TEST wallet';b.onclick=()=>connect(null);$('#setup-wallets').append(b);status('Connect a wallet to review deployment.');}else discoverWallets();}
 }catch(e){status(englishError(e));}
